@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -19,42 +20,44 @@ public class IncomesourcesController {
         this.incomesourcesService = incomesourcesService;
     }
 
-    // Create
     @PostMapping("/create")
     public ResponseEntity<Incomesources> createIncomeSource(@RequestBody Incomesources incomeSource) {
         Incomesources createdSource = incomesourcesService.createIncomeSource(incomeSource);
         return ResponseEntity.ok(createdSource);
     }
 
-    // Read by ID
     @GetMapping("/{sourceId}")
     public ResponseEntity<Incomesources> getIncomeSourceById(@PathVariable Long sourceId) {
         Optional<Incomesources> incomeSource = incomesourcesService.getIncomeSourceById(sourceId);
         return incomeSource.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Read by User ID
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Incomesources> getIncomeSourceByUserId(@PathVariable Long userId) {
-        Optional<Incomesources> incomeSource = incomesourcesService.getIncomeSourceByUserId(userId);
-        return incomeSource.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<List<Incomesources>> getIncomeSourcesByUserId(@PathVariable Long userId) {
+        List<Incomesources> incomeSources = incomesourcesService.getIncomeSourcesByUserId(userId);
+        if (!incomeSources.isEmpty()) {
+            return ResponseEntity.ok(incomeSources);
+        }
+        return ResponseEntity.notFound().build();
     }
 
-    // Read by Source Name
-    @GetMapping("/name/{sourceName}")
-    public ResponseEntity<Incomesources> getIncomeSourceByName(@PathVariable String sourceName) {
-        Optional<Incomesources> incomeSource = incomesourcesService.getIncomeSourceByName(sourceName);
-        return incomeSource.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/user/{userId}/name/{sourceName}")
+    public ResponseEntity<List<Incomesources>> getIncomeSourcesByUserIdAndSourceName(
+            @PathVariable Long userId, @PathVariable String sourceName) {
+        List<Incomesources> incomeSources = incomesourcesService.getIncomeSourcesByUserIdAndSourceName(userId, sourceName);
+        if (!incomeSources.isEmpty()) {
+            return ResponseEntity.ok(incomeSources);
+        }
+        return ResponseEntity.notFound().build();
     }
 
-    // Update
-    @PutMapping("/{sourceId}")
-    public ResponseEntity<Incomesources> updateIncomeSource(@PathVariable Long sourceId, @RequestBody Incomesources incomeSource) {
-        Incomesources updatedSource = incomesourcesService.updateIncomeSource(sourceId, incomeSource);
+    @PutMapping("/user/{userId}/{sourceId}")
+    public ResponseEntity<Incomesources> updateIncomeSource(
+            @PathVariable Long userId, @PathVariable Long sourceId, @RequestBody Incomesources incomeSource) {
+        Incomesources updatedSource = incomesourcesService.updateIncomeSource(userId, sourceId, incomeSource);
         return updatedSource != null ? ResponseEntity.ok(updatedSource) : ResponseEntity.notFound().build();
     }
 
-    // Delete
     @DeleteMapping("/{sourceId}")
     public ResponseEntity<Void> deleteIncomeSource(@PathVariable Long sourceId) {
         boolean deleted = incomesourcesService.deleteIncomeSource(sourceId);

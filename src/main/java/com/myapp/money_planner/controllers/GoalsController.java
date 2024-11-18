@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/goals")
@@ -19,42 +19,43 @@ public class GoalsController {
         this.goalsService = goalsService;
     }
 
-    // Create
     @PostMapping("/create")
     public ResponseEntity<Goals> createGoal(@RequestBody Goals goal) {
         Goals createdGoal = goalsService.createGoal(goal);
         return ResponseEntity.ok(createdGoal);
     }
 
-    // Read by ID
     @GetMapping("/{goalId}")
     public ResponseEntity<Goals> getGoalById(@PathVariable Long goalId) {
-        Optional<Goals> goal = goalsService.getGoalById(goalId);
-        return goal.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return goalsService.getGoalById(goalId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Read by User ID
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Goals> getGoalByUserId(@PathVariable Long userId) {
-        Optional<Goals> goal = goalsService.getGoalByUserId(userId);
-        return goal.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<List<Goals>> getGoalsByUserId(@PathVariable Long userId) {
+        List<Goals> goals = goalsService.getGoalsByUserId(userId);
+        if (!goals.isEmpty()) {
+            return ResponseEntity.ok(goals);
+        }
+        return ResponseEntity.notFound().build();
     }
 
-    // Read by Goal Name
-    @GetMapping("/name/{goalName}")
-    public ResponseEntity<Goals> getGoalByName(@PathVariable String goalName) {
-        Optional<Goals> goal = goalsService.getGoalByName(goalName);
-        return goal.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/user/{userId}/name/{goalName}")
+    public ResponseEntity<List<Goals>> getGoalsByUserIdAndGoalName(@PathVariable Long userId, @PathVariable String goalName) {
+        List<Goals> goals = goalsService.getGoalsByUserIdAndGoalName(userId, goalName);
+        if (!goals.isEmpty()) {
+            return ResponseEntity.ok(goals);
+        }
+        return ResponseEntity.notFound().build();
     }
 
-    // Update
-    @PutMapping("/{goalId}")
-    public ResponseEntity<Goals> updateGoal(@PathVariable Long goalId, @RequestBody Goals goal) {
-        Goals updatedGoal = goalsService.updateGoal(goalId, goal);
+    @PutMapping("/user/{userId}/goal/{goalId}")
+    public ResponseEntity<Goals> updateGoal(@PathVariable Long userId, @PathVariable Long goalId, @RequestBody Goals goal) {
+        Goals updatedGoal = goalsService.updateGoal(userId, goalId, goal);
         return updatedGoal != null ? ResponseEntity.ok(updatedGoal) : ResponseEntity.notFound().build();
     }
 
-    // Delete
     @DeleteMapping("/{goalId}")
     public ResponseEntity<Void> deleteGoal(@PathVariable Long goalId) {
         boolean deleted = goalsService.deleteGoal(goalId);

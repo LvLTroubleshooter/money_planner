@@ -5,6 +5,9 @@ import com.myapp.money_planner.repositories.GoalsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -13,39 +16,48 @@ public class GoalsService {
     @Autowired
     private GoalsRepository goalsRepository;
 
-    // Create
     public Goals createGoal(Goals goal) {
+        if (goal.getCreatedAt() == null) {
+            goal.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        }
         return goalsRepository.save(goal);
     }
 
-    // Read
     public Optional<Goals> getGoalById(Long goalId) {
         return goalsRepository.findById(goalId);
     }
 
-    public Optional<Goals> getGoalByUserId(Long userId) {
+    public List<Goals> getGoalsByUserId(Long userId) {
         return goalsRepository.findByUser_UserId(userId);
     }
 
-    public Optional<Goals> getGoalByName(String goalName) {
-        return goalsRepository.findByGoalName(goalName);
+    public List<Goals> getGoalsByUserIdAndGoalName(Long userId, String goalName) {
+        return goalsRepository.findByUser_UserIdAndGoalName(userId, goalName);
     }
 
-    // Update
-    public Goals updateGoal(Long goalId, Goals goal) {
-        if (goalsRepository.existsById(goalId)) {
-            goal.setGoalId(goalId); // Ensure we're updating the correct goal
-            return goalsRepository.save(goal);
+    public Goals updateGoal(Long userId, Long goalId, Goals goal) {
+        Optional<Goals> existingGoal = goalsRepository.findByUser_UserIdAndGoalId(userId, goalId);
+
+        if (existingGoal.isPresent()) {
+            Goals goalToUpdate = existingGoal.get();
+
+            // Prevent updating the user or goal ID
+            goalToUpdate.setGoalName(goal.getGoalName());
+            goalToUpdate.setGoalAmount(goal.getGoalAmount());
+            goalToUpdate.setCurrentAmount(goal.getCurrentAmount());
+            goalToUpdate.setDeadline(goal.getDeadline());
+
+            return goalsRepository.save(goalToUpdate);
         }
-        return null; // Return null if the goal doesn't exist
+
+        return null;
     }
 
-    // Delete
     public boolean deleteGoal(Long goalId) {
         if (goalsRepository.existsById(goalId)) {
             goalsRepository.deleteById(goalId);
             return true;
         }
-        return false; // Return false if the goal doesn't exist
+        return false;
     }
 }

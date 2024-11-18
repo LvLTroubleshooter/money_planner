@@ -5,6 +5,8 @@ import com.myapp.money_planner.repositories.IncomesourcesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -13,39 +15,41 @@ public class IncomesourcesService {
     @Autowired
     private IncomesourcesRepository incomesourcesRepository;
 
-    // Create
     public Incomesources createIncomeSource(Incomesources incomeSource) {
+        if (incomeSource.getCreatedAt() == null) {
+            incomeSource.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        }
         return incomesourcesRepository.save(incomeSource);
     }
 
-    // Read
     public Optional<Incomesources> getIncomeSourceById(Long sourceId) {
         return incomesourcesRepository.findById(sourceId);
     }
 
-    public Optional<Incomesources> getIncomeSourceByUserId(Long userId) {
+    public List<Incomesources> getIncomeSourcesByUserId(Long userId) {
         return incomesourcesRepository.findByUser_UserId(userId);
     }
 
-    public Optional<Incomesources> getIncomeSourceByName(String sourceName) {
-        return incomesourcesRepository.findBySourceName(sourceName);
+    public List<Incomesources> getIncomeSourcesByUserIdAndSourceName(Long userId, String sourceName) {
+        return incomesourcesRepository.findByUser_UserIdAndSourceName(userId, sourceName);
     }
 
-    // Update
-    public Incomesources updateIncomeSource(Long sourceId, Incomesources incomeSource) {
-        if (incomesourcesRepository.existsById(sourceId)) {
-            incomeSource.setSourceId(sourceId); // Ensure we're updating the correct source
-            return incomesourcesRepository.save(incomeSource);
+    public Incomesources updateIncomeSource(Long userId, Long sourceId, Incomesources incomeSource) {
+        Optional<Incomesources> existingIncomeSource = incomesourcesRepository.findByUser_UserIdAndSourceId(userId, sourceId);
+        if (existingIncomeSource.isPresent()) {
+            Incomesources sourceToUpdate = existingIncomeSource.get();
+            sourceToUpdate.setSourceName(incomeSource.getSourceName());
+            sourceToUpdate.setAmount(incomeSource.getAmount());
+            return incomesourcesRepository.save(sourceToUpdate);
         }
-        return null; // Return null if the source doesn't exist
+        return null;
     }
 
-    // Delete
     public boolean deleteIncomeSource(Long sourceId) {
         if (incomesourcesRepository.existsById(sourceId)) {
             incomesourcesRepository.deleteById(sourceId);
             return true;
         }
-        return false; // Return false if the source doesn't exist
+        return false;
     }
 }
