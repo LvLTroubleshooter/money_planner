@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.sql.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/budgets")
@@ -20,44 +21,71 @@ public class BudgetsController {
     }
 
     // Create
-    @PostMapping("/create")
-    public ResponseEntity<Budgets> createBudget(@RequestBody Budgets budget) {
+    @PostMapping("/user/{userId}/category/{categoryId}/create")
+    public ResponseEntity<Budgets> createBudget(@PathVariable Long userId, @PathVariable Long categoryId, @RequestBody Budgets budget) {
+        budget.getUser().setUserId(userId);
+        budget.getCategory().setCategoryId(categoryId);
         Budgets createdBudget = budgetsService.createBudget(budget);
         return ResponseEntity.ok(createdBudget);
     }
 
-    // Read by ID
-    @GetMapping("/{budgetId}")
-    public ResponseEntity<Budgets> getBudgetById(@PathVariable Long budgetId) {
-        Optional<Budgets> budget = budgetsService.getBudgetById(budgetId);
-        return budget.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // Read by User ID
+    // Get All Budgets by User
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Budgets> getBudgetByUserId(@PathVariable Long userId) {
-        Optional<Budgets> budget = budgetsService.getBudgetByUserId(userId);
-        return budget.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<List<Budgets>> getAllBudgetsByUser(@PathVariable Long userId) {
+        List<Budgets> budgets = budgetsService.getAllBudgetsByUser(userId);
+        return budgets.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(budgets);
     }
 
-    // Read by Category ID
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<Budgets> getBudgetByCategoryId(@PathVariable Long categoryId) {
-        Optional<Budgets> budget = budgetsService.getBudgetByCategoryId(categoryId);
-        return budget.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    // Get Budget by User ID and Budget ID
+    @GetMapping("/user/{userId}/budget/{budgetId}")
+    public ResponseEntity<Budgets> getBudgetByUserAndBudgetId(@PathVariable Long userId, @PathVariable Long budgetId) {
+        Budgets budget = budgetsService.getBudgetByUserAndBudgetId(userId, budgetId);
+        return budget != null ? ResponseEntity.ok(budget) : ResponseEntity.notFound().build();
     }
 
-    // Update
-    @PutMapping("/{budgetId}")
-    public ResponseEntity<Budgets> updateBudget(@PathVariable Long budgetId, @RequestBody Budgets budget) {
-        Budgets updatedBudget = budgetsService.updateBudget(budgetId, budget);
+    // Get Budgets by User and Category
+    @GetMapping("/user/{userId}/category/{categoryId}")
+    public ResponseEntity<List<Budgets>> getBudgetsByCategory(@PathVariable Long userId, @PathVariable Long categoryId) {
+        List<Budgets> budgets = budgetsService.getBudgetsByCategory(userId, categoryId);
+        return budgets.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(budgets);
+    }
+
+    // Get Budgets by User and Amount Range
+    @GetMapping("/user/{userId}/amount-range")
+    public ResponseEntity<List<Budgets>> getBudgetsByAmountRange(@PathVariable Long userId,
+                                                                 @RequestParam Double minAmount,
+                                                                 @RequestParam Double maxAmount) {
+        List<Budgets> budgets = budgetsService.getBudgetsByAmountRange(userId, minAmount, maxAmount);
+        return budgets.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(budgets);
+    }
+
+    // Get Budgets by User and Date Range
+    @GetMapping("/user/{userId}/date-range")
+    public ResponseEntity<List<Budgets>> getBudgetsByDateRange(@PathVariable Long userId,
+                                                               @RequestParam Date startDate,
+                                                               @RequestParam Date endDate) {
+        List<Budgets> budgets = budgetsService.getBudgetsByDateRange(userId, startDate, endDate);
+        return budgets.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(budgets);
+    }
+
+    // Get Budgets by User and Status
+    @GetMapping("/user/{userId}/status/{status}")
+    public ResponseEntity<List<Budgets>> getBudgetsByStatus(@PathVariable Long userId, @PathVariable String status) {
+        List<Budgets> budgets = budgetsService.getBudgetsByStatus(userId, status);
+        return budgets.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(budgets);
+    }
+
+    // Update Budget
+    @PutMapping("/user/{userId}/budget/{budgetId}")
+    public ResponseEntity<Budgets> updateBudget(@PathVariable Long userId, @PathVariable Long budgetId, @RequestBody Budgets budget) {
+        Budgets updatedBudget = budgetsService.updateBudget(userId, budgetId, budget);
         return updatedBudget != null ? ResponseEntity.ok(updatedBudget) : ResponseEntity.notFound().build();
     }
 
-    // Delete
-    @DeleteMapping("/{budgetId}")
-    public ResponseEntity<Void> deleteBudget(@PathVariable Long budgetId) {
-        boolean deleted = budgetsService.deleteBudget(budgetId);
+    // Delete Budget
+    @DeleteMapping("/user/{userId}/budget/{budgetId}")
+    public ResponseEntity<Void> deleteBudget(@PathVariable Long userId, @PathVariable Long budgetId) {
+        boolean deleted = budgetsService.deleteBudget(userId, budgetId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

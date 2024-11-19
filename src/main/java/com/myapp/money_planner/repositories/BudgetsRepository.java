@@ -1,20 +1,25 @@
 package com.myapp.money_planner.repositories;
 
 import com.myapp.money_planner.models.Budgets;
-import lombok.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface BudgetsRepository extends JpaRepository<Budgets, Long> {
-    @NonNull
-    Optional<Budgets> findByUser_UserId(@NonNull Long userId); // user_id_FK is NOT NULL
 
-    @NonNull
-    Optional<Budgets> findByCategory_CategoryId(Long categoryId);
+    List<Budgets> findAllByUser_UserId(Long userId);
 
-    @NonNull
-    Optional<Budgets> findById(@NonNull Long budgetId);
+    Optional<Budgets> findByUser_UserIdAndBudgetId(Long userId, Long budgetId);
+
+    List<Budgets> findAllByUser_UserIdAndCategory_CategoryId(Long userId, Long categoryId);
+
+    List<Budgets> findAllByUser_UserIdAndAmountBetween(Long userId, Double minAmount, Double maxAmount);
+
+    List<Budgets> findAllByUser_UserIdAndStartDateBetween(Long userId, Date startDate, Date endDate);
+
+    List<Budgets> findAllByUser_UserIdAndBudgetStatus(Long userId, String status);
 }

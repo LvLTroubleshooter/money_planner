@@ -5,6 +5,8 @@ import com.myapp.money_planner.repositories.BudgetsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -13,39 +15,59 @@ public class BudgetsService {
     @Autowired
     private BudgetsRepository budgetsRepository;
 
-    // Create
+    // Create Budget
     public Budgets createBudget(Budgets budget) {
         return budgetsRepository.save(budget);
     }
 
-    // Read
-    public Optional<Budgets> getBudgetById(Long budgetId) {
-        return budgetsRepository.findById(budgetId);
+    // Get All Budgets by User
+    public List<Budgets> getAllBudgetsByUser(Long userId) {
+        return budgetsRepository.findAllByUser_UserId(userId);
     }
 
-    public Optional<Budgets> getBudgetByUserId(Long userId) {
-        return budgetsRepository.findByUser_UserId(userId);
+    // Get Budget by User and Budget ID
+    public Budgets getBudgetByUserAndBudgetId(Long userId, Long budgetId) {
+        return budgetsRepository.findByUser_UserIdAndBudgetId(userId, budgetId).orElse(null);
     }
 
-    public Optional<Budgets> getBudgetByCategoryId(Long categoryId) {
-        return budgetsRepository.findByCategory_CategoryId(categoryId);
+    // Get Budgets by User and Category
+    public List<Budgets> getBudgetsByCategory(Long userId, Long categoryId) {
+        return budgetsRepository.findAllByUser_UserIdAndCategory_CategoryId(userId, categoryId);
     }
 
-    // Update
-    public Budgets updateBudget(Long budgetId, Budgets budget) {
-        if (budgetsRepository.existsById(budgetId)) {
-            budget.setBudgetId(budgetId); // Ensure we're updating the correct budget
+    // Get Budgets by User and Amount Range
+    public List<Budgets> getBudgetsByAmountRange(Long userId, Double minAmount, Double maxAmount) {
+        return budgetsRepository.findAllByUser_UserIdAndAmountBetween(userId, minAmount, maxAmount);
+    }
+
+    // Get Budgets by User and Date Range
+    public List<Budgets> getBudgetsByDateRange(Long userId, Date startDate, Date endDate) {
+        return budgetsRepository.findAllByUser_UserIdAndStartDateBetween(userId, startDate, endDate);
+    }
+
+    // Get Budgets by User and Status
+    public List<Budgets> getBudgetsByStatus(Long userId, String status) {
+        return budgetsRepository.findAllByUser_UserIdAndBudgetStatus(userId, status);
+    }
+
+    // Update Budget
+    public Budgets updateBudget(Long userId, Long budgetId, Budgets budget) {
+        Optional<Budgets> existingBudget = budgetsRepository.findByUser_UserIdAndBudgetId(userId, budgetId);
+        if (existingBudget.isPresent()) {
+            budget.setBudgetId(budgetId);
+            budget.setUser(existingBudget.get().getUser());
             return budgetsRepository.save(budget);
         }
-        return null; // Return null if the budget doesn't exist
+        return null;
     }
 
-    // Delete
-    public boolean deleteBudget(Long budgetId) {
-        if (budgetsRepository.existsById(budgetId)) {
+    // Delete Budget
+    public boolean deleteBudget(Long userId, Long budgetId) {
+        Optional<Budgets> existingBudget = budgetsRepository.findByUser_UserIdAndBudgetId(userId, budgetId);
+        if (existingBudget.isPresent()) {
             budgetsRepository.deleteById(budgetId);
             return true;
         }
-        return false; // Return false if the budget doesn't exist
+        return false;
     }
 }
