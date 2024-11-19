@@ -9,11 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface CategoriesRepository extends JpaRepository<Categories, Long> {
-    @NonNull
-    Optional<Categories> findByCategoryName(@NonNull String categoryName); // category_name is NOT NULL
 
     @NonNull
-    Optional<Categories> findByUser_UserId(@NonNull Long userId); // user_id_FK is NOT NULL
+    Optional<Categories> findByCategoryName(@NonNull String categoryName);
 
     @NonNull
     Optional<Categories> findById(@NonNull Long categoryId);
