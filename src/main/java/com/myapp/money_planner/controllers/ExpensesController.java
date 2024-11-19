@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/expenses")
@@ -20,53 +20,52 @@ public class ExpensesController {
         this.expensesService = expensesService;
     }
 
-    // Create
-    @PostMapping("/create")
-    public ResponseEntity<Expenses> createExpense(@RequestBody Expenses expense) {
+    @PostMapping("/user/{userId}/create")
+    public ResponseEntity<Expenses> createExpense(@PathVariable Long userId, @RequestBody Expenses expense) {
+        expense.getUser().setUserId(userId);
         Expenses createdExpense = expensesService.createExpense(expense);
         return ResponseEntity.ok(createdExpense);
     }
 
-    // Read by ID
-    @GetMapping("/{expenseId}")
-    public ResponseEntity<Expenses> getExpenseById(@PathVariable Long expenseId) {
-        Optional<Expenses> expense = expensesService.getExpenseById(expenseId);
-        return expense.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // Read by User ID
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Expenses> getExpenseByUserId(@PathVariable Long userId) {
-        Optional<Expenses> expense = expensesService.getExpenseByUserId(userId);
-        return expense.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<List<Expenses>> getAllExpensesByUser(@PathVariable Long userId) {
+        List<Expenses> expenses = expensesService.getAllExpensesByUser(userId);
+        return expenses.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(expenses);
     }
 
-    // Read by Category ID
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<Expenses> getExpenseByCategoryId(@PathVariable Long categoryId) {
-        Optional<Expenses> expense = expensesService.getExpenseByCategoryId(categoryId);
-        return expense.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/user/{userId}/amount-range")
+    public ResponseEntity<List<Expenses>> getExpensesByAmountRange(
+            @PathVariable Long userId, @RequestParam Double minAmount, @RequestParam Double maxAmount) {
+        List<Expenses> expenses = expensesService.getExpensesByAmountRange(userId, minAmount, maxAmount);
+        return expenses.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(expenses);
     }
 
-    // Read by Date
-    @GetMapping("/date/{expenseDate}")
-    public ResponseEntity<Expenses> getExpenseByDate(@PathVariable String expenseDate) {
-        LocalDate date = LocalDate.parse(expenseDate);
-        Optional<Expenses> expense = expensesService.getExpenseByDate(date);
-        return expense.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/user/{userId}/category/{categoryId}")
+    public ResponseEntity<List<Expenses>> getExpensesByCategory(
+            @PathVariable Long userId, @PathVariable Long categoryId) {
+        List<Expenses> expenses = expensesService.getExpensesByCategory(userId, categoryId);
+        return expenses.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(expenses);
     }
 
-    // Update
-    @PutMapping("/{expenseId}")
-    public ResponseEntity<Expenses> updateExpense(@PathVariable Long expenseId, @RequestBody Expenses expense) {
-        Expenses updatedExpense = expensesService.updateExpense(expenseId, expense);
+    @GetMapping("/user/{userId}/date-range")
+    public ResponseEntity<List<Expenses>> getExpensesByDateRange(
+            @PathVariable Long userId, @RequestParam String startDate, @RequestParam String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        List<Expenses> expenses = expensesService.getExpensesByDateRange(userId, start, end);
+        return expenses.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(expenses);
+    }
+
+    @PutMapping("/user/{userId}/expense/{expenseId}")
+    public ResponseEntity<Expenses> updateExpense(
+            @PathVariable Long userId, @PathVariable Long expenseId, @RequestBody Expenses expense) {
+        Expenses updatedExpense = expensesService.updateExpense(userId, expenseId, expense);
         return updatedExpense != null ? ResponseEntity.ok(updatedExpense) : ResponseEntity.notFound().build();
     }
 
-    // Delete
-    @DeleteMapping("/{expenseId}")
-    public ResponseEntity<Void> deleteExpense(@PathVariable Long expenseId) {
-        boolean deleted = expensesService.deleteExpense(expenseId);
+    @DeleteMapping("/user/{userId}/expense/{expenseId}")
+    public ResponseEntity<Void> deleteExpense(@PathVariable Long userId, @PathVariable Long expenseId) {
+        boolean deleted = expensesService.deleteExpense(userId, expenseId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }
