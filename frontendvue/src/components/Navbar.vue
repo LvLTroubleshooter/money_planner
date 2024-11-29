@@ -23,7 +23,7 @@ import logo from '@/assets/img/logo.png';
           <!-- Login Button -->
           <a
               href="login.html"
-              class="text-white border border-white hover:bg-indigo-900 hover:text-white rounded-md px-4 py-2 transition"
+              class="text-white  bg-indigo-600 hover:bg-indigo-700 hover:text-white rounded-md px-4 py-2 transition"
           >
             Login
           </a>

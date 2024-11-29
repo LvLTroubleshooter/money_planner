@@ -1,63 +1,76 @@
 <template>
-  <footer class="bg-blue-950 text-white py-8">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Footer Top Section -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-        <!-- About Section -->
-        <div>
-          <h3 class="text-lg font-bold mb-4">About Us</h3>
-          <p class="text-sm">
-            Money Planner helps you take control of your finances and achieve financial freedom. Start planning today!
-          </p>
-        </div>
+  <footer class="bg-blue-950 text-white py-12">
+    <div class="container mx-auto px-6">
+      <!-- Centered Content Section -->
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-semibold mb-2">Let's Connect</h2>
+        <p class="text-sm mb-6">
+          Our users stay up to date with the latest product updates & announcements.
+        </p>
+        <form @submit.prevent class="space-y-4 flex flex-col items-center">
+          <!-- Input field with rounded corners -->
+          <input
+              type="email"
+              placeholder="Enter your email"
+              class="w-80 p-3 pl-4 pr-4 text-black rounded-full focus:outline-none mb-1"
+              required
+          />
+          <!-- Join button underneath the input (width same as input) -->
+          <button
+              type="submit"
+              class="w-80 py-3 bg-custom-color hover:bg-custom-hover-color text-white rounded-full"
+          >
+            Join
+          </button>
+        </form>
+      </div>
 
-        <!-- Quick Links Section -->
-        <div>
-          <h3 class="text-lg font-bold mb-4">Quick Links</h3>
-          <ul class="space-y-2">
-            <li>
-              <a href="/about" class="hover:underline">About</a>
-            </li>
-            <li>
-              <a href="/contact" class="hover:underline">Contact</a>
-            </li>
-            <li>
-              <a href="/privacy" class="hover:underline">Privacy Policy</a>
-            </li>
-            <li>
-              <a href="/terms" class="hover:underline">Terms & Conditions</a>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Newsletter Section -->
-        <div>
-          <h3 class="text-lg font-bold mb-4">Subscribe to Our Newsletter</h3>
-          <form @submit.prevent>
-            <input
-                type="email"
-                placeholder="Enter your email"
-                class="w-full p-2 mb-4 text-black rounded-md"
-                required
-            />
-            <button
-                type="submit"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md w-full"
-            >
-              Subscribe
-            </button>
-          </form>
+      <!-- Social Media Section -->
+      <div class="text-center mb-8">
+        <div class="flex justify-center space-x-8">
+          <a href="#" class="text-indigo-400 hover:text-indigo-500">
+            <i class="pi pi-facebook text-3xl"></i>
+          </a>
+          <a href="#" class="text-indigo-400 hover:text-indigo-500">
+            <i class="pi pi-instagram text-3xl"></i>
+          </a>
+          <a href="#" class="text-indigo-400 hover:text-indigo-500">
+            <i class="pi pi-linkedin text-3xl"></i>
+          </a>
+          <a href="#" class="text-indigo-400 hover:text-indigo-500">
+            <i class="pi pi-twitter text-3xl"></i>
+          </a>
+          <a href="#" class="text-indigo-400 hover:text-indigo-500">
+            <i class="pi pi-youtube text-3xl"></i>
+          </a>
         </div>
       </div>
 
       <!-- Footer Bottom Section -->
-      <div class="text-center text-sm border-t border-blue-800 pt-4">
-        © 2024 Money Planner. All rights reserved.
+      <div class="flex justify-between items-center text-sm border-t border-blue-800 pt-4">
+        <div>© 2024 Money Planner. All rights reserved.</div>
+        <div class="flex items-center space-x-4">
+          <img src="@/assets/img/logo.png" alt="Logo" class="w-8 h-8" />
+          <span class="font-semibold">Money Planner</span>
+        </div>
+
       </div>
     </div>
   </footer>
 </template>
 
+
 <style scoped>
-/* Adjust styles if needed */
+/* Custom background color for the "Get Started" button */
+.bg-custom-color {
+  background-color: rgba(191, 148, 95, 1); /* Initial gold color */
+}
+
+/* Custom hover background color */
+.hover\:bg-custom-hover-color:hover {
+  background-color: rgba(164, 120, 65, 1); /* Custom light gold hover color */
+}
 </style>
+
+<script setup lang="ts">
+</script>

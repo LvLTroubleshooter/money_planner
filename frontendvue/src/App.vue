@@ -6,6 +6,8 @@ import HomeCards from "@/components/HomeCards.vue";
 import LandingPageView from "@/views/LandingPageView.vue";
 import FaQ from "@/components/FaQ.vue";
 import Footer from "@/components/Footer.vue";
+import 'primeicons/primeicons.css';
+
 
 </script>
 
