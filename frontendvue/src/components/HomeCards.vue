@@ -9,47 +9,47 @@ import Card from "@/components/Card.vue";
       <!-- Grid Layout -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-lg">
         <!-- Income Tracking Section -->
-        <Card bg="bg-green-100">
-          <h2 class="text-2xl font-bold text-green-800">Track Your Income</h2>
-          <p class="mt-2 mb-4 text-green-700">
-            Keep a record of all your income sources and stay updated on where your money is coming from.
+        <Card class="min-h-full flex flex-col justify-between shadow-lg border rounded-lg p-6 transition-transform transform hover:scale-105 hover:shadow-xl bg-gradient-to-r from-green-300 via-green-200 to-green-100">
+          <h2 class="text-2xl font-bold text-gray-900">Take Control of Your Income</h2>
+          <p class="mt-2 mb-4 text-gray-800">
+            Track your income to stay on top of your finances. See exactly where your money comes from, and keep everything organized.
           </p>
-          <!-- Call-to-Action Button -->
+          <!-- Call-to-Action Link -->
           <a
               href="/income"
-              class="inline-block bg-green-700 text-white rounded-lg px-4 py-2 hover:bg-green-800"
+              class="cta-link text-black text-left hover:text-gray-500"
           >
-            Start Tracking
+            Learn More
           </a>
         </Card>
 
         <!-- Expense Management Section -->
-        <Card bg="bg-red-100">
-          <h2 class="text-2xl font-bold text-red-800">Manage Your Expenses</h2>
-          <p class="mt-2 mb-4 text-red-700">
-            Categorize and monitor your spending to ensure you stay within your budget.
+        <Card class="min-h-full flex flex-col justify-between shadow-lg border rounded-lg p-6 transition-transform transform hover:scale-105 hover:shadow-xl bg-gradient-to-r from-red-300 via-red-200 to-red-100">
+          <h2 class="text-2xl font-bold text-gray-900">Master Your Expenses</h2>
+          <p class="mt-2 mb-4 text-gray-800">
+            Track your expenses to stay within budget. Our app helps you understand where your money is going and how to optimize spending.
           </p>
-          <!-- Call-to-Action Button -->
+          <!-- Call-to-Action Link -->
           <a
               href="/expenses"
-              class="inline-block bg-red-700 text-white rounded-lg px-4 py-2 hover:bg-red-800"
+              class="cta-link text-black text-left hover:text-gray-500"
           >
-            View Expenses
+            Learn More
           </a>
         </Card>
 
         <!-- Financial Goals Section -->
-        <Card bg="bg-blue-100">
-          <h2 class="text-2xl font-bold text-blue-800">Set Financial Goals</h2>
-          <p class="mt-2 mb-4 text-blue-700">
-            Define and achieve your savings or investment goals with ease.
+        <Card class="min-h-full flex flex-col justify-between shadow-lg border rounded-lg p-6 transition-transform transform hover:scale-105 hover:shadow-xl bg-gradient-to-r from-blue-300 via-blue-200 to-blue-100">
+          <h2 class="text-2xl font-bold text-gray-900">Achieve Your Financial Goals</h2>
+          <p class="mt-2 mb-4 text-gray-800">
+            Set and track your financial goals easily with our app. Stay motivated by monitoring your progress and reaching milestones along the way.
           </p>
-          <!-- Call-to-Action Button -->
+          <!-- Call-to-Action Link -->
           <a
               href="/goals"
-              class="inline-block bg-blue-700 text-white rounded-lg px-4 py-2 hover:bg-blue-800"
+              class="cta-link text-black text-left hover:text-gray-500"
           >
-            Create Goals
+            Learn More
           </a>
         </Card>
       </div>
@@ -58,5 +58,64 @@ import Card from "@/components/Card.vue";
 </template>
 
 <style scoped>
-/* Custom styles for buttons and layout, if needed */
+/* Base Styles for CTA Links */
+.cta-link {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  margin-top: 16px; /* Space between the text and link */
+  padding: 8px 0; /* Add padding to make it look button-like */
+}
+
+/* Hover Effect for Cards */
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Make sure all cards are the same height */
+.card-container {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Card Styling */
+.shadow-lg {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* A more pronounced shadow */
+}
+
+.border {
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Light border to give it more definition */
+}
+
+.rounded-lg {
+  border-radius: 10px; /* Smooth rounded corners */
+}
+
+.p-6 {
+  padding: 24px; /* More padding inside the card */
+}
+
+/* Hover Effect - Slight scaling */
+.hover\:scale-105:hover {
+  transform: scale(1.05); /* Slight scaling on hover for a card lift effect */
+}
+
+/* Background Gradients */
+.bg-gradient-to-r {
+  background: linear-gradient(135deg, rgba(191, 148, 95, 0.7), rgba(191, 148, 95, 0.5));
+}
+
+.bg-gradient-to-r:hover {
+  background: linear-gradient(135deg, rgba(191, 148, 95, 0.9), rgba(191, 148, 95, 0.7));
+}
 </style>
