@@ -1,5 +1,7 @@
 <script setup>
 import Card from "@/components/Card.vue";
+import {RouterLink} from "vue-router";
+
 </script>
 
 <template>
@@ -15,12 +17,12 @@ import Card from "@/components/Card.vue";
             Track your income to stay on top of your finances. See exactly where your money comes from, and keep everything organized.
           </p>
           <!-- Call-to-Action Link -->
-          <a
-              href="/income"
+          <RouterLink
+              to="/income"
               class="cta-link text-black text-left hover:text-gray-500"
           >
             Learn More
-          </a>
+          </RouterLink>
         </Card>
 
         <!-- Expense Management Section -->
@@ -30,12 +32,12 @@ import Card from "@/components/Card.vue";
             Track your expenses to stay within budget. Our app helps you understand where your money is going and how to optimize spending.
           </p>
           <!-- Call-to-Action Link -->
-          <a
-              href="/expenses"
+          <RouterLink
+              to="/expenses"
               class="cta-link text-black text-left hover:text-gray-500"
           >
             Learn More
-          </a>
+          </RouterLink>
         </Card>
 
         <!-- Financial Goals Section -->
@@ -45,12 +47,12 @@ import Card from "@/components/Card.vue";
             Set and track your financial goals easily with our app. Stay motivated by monitoring your progress and reaching milestones along the way.
           </p>
           <!-- Call-to-Action Link -->
-          <a
-              href="/goals"
+          <RouterLink
+              to="/goals"
               class="cta-link text-black text-left hover:text-gray-500"
           >
             Learn More
-          </a>
+          </RouterLink>
         </Card>
       </div>
     </div>
