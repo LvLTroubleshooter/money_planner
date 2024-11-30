@@ -4,6 +4,7 @@ import com.myapp.money_planner.models.Users;
 import com.myapp.money_planner.services.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -67,4 +68,31 @@ public class UsersController {
         List<Users> users = usersService.getAllUsers();
         return ResponseEntity.ok(users);
     }
+    @PostMapping("/signup")
+    public ResponseEntity<?> signUp(@RequestBody Users user) {
+        // Check if username or email is already taken
+        if (usersService.getUserByUsername(user.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body("Username already in use.");
+        }
+        if (usersService.getUserByEmail(user.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email already in use.");
+        }
+
+        // Encrypt the password before saving
+        user.setUserPassword(new BCryptPasswordEncoder().encode(user.getUserPassword()));
+        Users createdUser = usersService.createUser(user);
+        return ResponseEntity.ok("User registered successfully.");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Users loginRequest) {
+        Optional<Users> user = usersService.getUserByEmail(loginRequest.getEmail());
+
+        if (user.isPresent() && new BCryptPasswordEncoder().matches(loginRequest.getUserPassword(), user.get().getUserPassword())) {
+            return ResponseEntity.ok("Login successful.");
+        }
+        return ResponseEntity.badRequest().body("Invalid credentials.");
+    }
+
+
 }
