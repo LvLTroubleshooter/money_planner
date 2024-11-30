@@ -8,6 +8,8 @@ const username = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+const errorMessage = ref('');
+const isLoading = ref(false);
 
 // Access Vue Router to redirect after successful signup
 const router = useRouter();
@@ -15,10 +17,12 @@ const router = useRouter();
 // Handle sign-up logic
 const handleSignUp = async () => {
   if (password.value !== confirmPassword.value) {
-    alert('Passwords do not match!');
+    errorMessage.value = 'Passwords do not match!';
     return;
   }
 
+  isLoading.value = true; // Activate loading animation
+  errorMessage.value = ''; // Reset error message
   try {
     // Make sure to await the axios call
     await axios.post('http://localhost:8080/api/users/signup', {
@@ -27,10 +31,14 @@ const handleSignUp = async () => {
       userPassword: password.value,
     });
 
-    alert('Sign Up Successful! Redirecting to Login...');
-    router.push('/login-page'); // Redirect to login page
+    // Add a 2-second delay before redirecting
+    setTimeout(() => {
+      isLoading.value = false; // Deactivate loading animation
+      router.push('/login-page'); // Redirect to login page
+    }, 2000);
   } catch (error) {
-    alert(error.response?.data || 'Sign Up Failed');
+    isLoading.value = false; // Deactivate loading animation
+    errorMessage.value = error.response?.data || 'Sign Up Failed';
   }
 };
 </script>
@@ -92,13 +100,22 @@ const handleSignUp = async () => {
           />
         </div>
 
+        <!-- Error Message -->
+        <div v-if="errorMessage" class="text-red-600 text-sm text-center">
+          {{ errorMessage }}
+        </div>
+
         <!-- Submit Button -->
         <div>
           <button
               type="submit"
-              class="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md hover:bg-blue-700 transition"
+              :class="[
+              'w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition',
+              isLoading ? 'animate-pulse cursor-not-allowed opacity-75' : 'hover:bg-blue-700'
+            ]"
+              :disabled="isLoading"
           >
-            Sign Up
+            {{ isLoading ? 'Signing Up...' : 'Sign Up' }}
           </button>
         </div>
       </form>
@@ -114,6 +131,3 @@ const handleSignUp = async () => {
   </div>
 </template>
 
-<style scoped>
-/* Your custom styles here */
-</style>
