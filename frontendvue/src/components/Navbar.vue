@@ -26,7 +26,7 @@ import logo from '@/assets/img/logo.png';
               to="/login-page"
               class="text-white  bg-indigo-600 hover:bg-indigo-700 hover:text-white rounded-md px-4 py-2 transition"
           >
-            Login
+            Log in
           </RouterLink>
           <!-- Get Started Button -->
           <RouterLink

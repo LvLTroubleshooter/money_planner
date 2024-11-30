@@ -2,6 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router';
 import LandingPageView from '@/views/LandingPageView.vue'
 import GetStartedView from "@/views/GetStartedView.vue";
 import LoginPageView from "@/views/LoginPageView.vue";
+import NotFoundView from "@/views/NotFoundView.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,11 @@ const router = createRouter({
             path: '/login-page',
             name: 'Login',
             component: LoginPageView
+        },
+        {
+            path: '/:catchAll(.*)',
+            name: 'NotFound',
+            component: NotFoundView
         }
 
     ]
