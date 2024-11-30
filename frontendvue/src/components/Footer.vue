@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-blue-950 text-white py-12">
+  <footer class="bg-blue-950 text-white pt-6 pb-0">
     <div class="container mx-auto px-6">
       <!-- Centered Content Section -->
       <div class="text-center mb-12">
@@ -47,14 +47,15 @@
       </div>
 
       <!-- Footer Bottom Section -->
-      <div class="flex justify-between items-center text-sm border-t border-blue-800 pt-4">
+      <div class="flex justify-between items-center text-sm border-t border-blue-800 pt-0 pb-0 px-1">
         <div>© 2024 Money Planner. All rights reserved.</div>
-        <div class="flex items-center space-x-4">
-          <img src="@/assets/img/logo.png" alt="Logo" class="w-8 h-8" />
-          <span class="font-semibold">Money Planner</span>
+        <div class="flex items-center space-x-0">
+          <img src="@/assets/img/logo.png" alt="Logo" class="w-16 h-16 " />
+          <span class="font-semibold ">Money Planner</span>
         </div>
-
       </div>
+
+
     </div>
   </footer>
 </template>
@@ -72,5 +73,5 @@
 }
 </style>
 
-<script setup lang="ts">
+<script setup>
 </script>

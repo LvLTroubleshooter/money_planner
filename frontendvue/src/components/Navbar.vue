@@ -7,7 +7,7 @@ import logo from '@/assets/img/logo.png';
   <nav class="bg-blue-950 border-b border-blue-950">
     <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div class="flex h-16 items-center justify-between">
-        <div class="flex items-center">
+        <div class="flex items-center ">
           <!-- Logo and Title -->
           <a class="flex flex-shrink-0 items-center mr-4" href="index.html">
             <!-- Display the logo image -->
