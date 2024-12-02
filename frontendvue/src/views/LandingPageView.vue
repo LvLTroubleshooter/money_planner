@@ -7,9 +7,12 @@ import Navbar from "@/components/Navbar.vue";
 </script>
 
 <template>
-  <Navbar />
-  <Hero />
-  <HomeCards />
-  <FaQ />
-  <Footer />
+  <div class="bg-gray-50">
+    <Navbar />
+    <Hero />
+    <HomeCards />
+    <FaQ />
+    <Footer />
+  </div>
+
 </template>

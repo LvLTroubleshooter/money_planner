@@ -6,7 +6,7 @@ import {RouterLink} from "vue-router";
 
 <template>
   <!-- Section Container -->
-  <section class="py-4 bg-gray-50">
+  <section class="py-0 bg-gray-50">
     <div class="container-xl lg:container m-auto">
       <!-- Grid Layout -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-lg">
