@@ -4,6 +4,7 @@ import GetStartedView from "@/views/GetStartedView.vue";
 import LoginPageView from "@/views/LoginPageView.vue";
 import NotFoundView from "@/views/NotFoundView.vue";
 import DashboardView from "@/views/DashboardView.vue";
+import GoalsView from "@/views/GoalsView.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,6 +34,11 @@ const router = createRouter({
             path: '/:catchAll(.*)',
             name: 'NotFound',
             component: NotFoundView
+        },
+        {
+            path: '/goals_page',
+            name: 'GoalsPage',
+            component: GoalsView
         }
 
     ]

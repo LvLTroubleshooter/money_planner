@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue';
-import { useRouter, useRoute, RouterLink } from 'vue-router';
+import {ref} from 'vue';
+import {useRouter, useRoute, RouterLink} from 'vue-router';
 
 const userName = ref('Ismail'); // Replace with dynamic data
 const userInitials = ref('I'); // Replace with dynamic initials or profile picture
@@ -8,7 +8,6 @@ const userInitials = ref('I'); // Replace with dynamic initials or profile pictu
 const router = useRouter();
 
 const handleLogout = () => {
-  // Handle logout logic here (clear session, etc.)
   router.push('/');
 };
 
@@ -24,7 +23,6 @@ const isActiveLink = (routePath) => {
       <!-- Profile Section -->
       <div class="flex items-center space-x-4">
         <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-xl font-semibold">
-          <!-- Example Initials, you can replace it with user's profile image -->
           <span>{{ userInitials }}</span>
         </div>
         <div class="text-white font-semibold">
@@ -38,10 +36,7 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/user-dashboard"
-                :class="[
-                isActiveLink('/user-dashboard') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition'
-              ]"
+                :class="[isActiveLink('/user-dashboard') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
             >
               <i class="pi pi-home text-indigo-400"></i>
               <span>Dashboard</span>
@@ -49,11 +44,8 @@ const isActiveLink = (routePath) => {
           </li>
           <li>
             <RouterLink
-                to="/goals"
-                :class="[
-                isActiveLink('/goals') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition'
-              ]"
+                to="/goals_page"
+                :class="[isActiveLink('/goals_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
             >
               <i class="pi pi-bullseye text-indigo-400"></i>
               <span>Goals</span>
@@ -62,10 +54,7 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/categories"
-                :class="[
-                isActiveLink('/categories') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition'
-              ]"
+                :class="[isActiveLink('/categories') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
             >
               <i class="pi pi-th-large text-indigo-400"></i>
               <span>Categories</span>
@@ -74,10 +63,7 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/income-sources"
-                :class="[
-                isActiveLink('/income-sources') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition'
-              ]"
+                :class="[isActiveLink('/income-sources') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
             >
               <i class="pi pi-wallet text-indigo-400"></i>
               <span>Income Sources</span>
@@ -86,10 +72,7 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/expenses"
-                :class="[
-                isActiveLink('/expenses') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition'
-              ]"
+                :class="[isActiveLink('/expenses') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
             >
               <i class="pi pi-credit-card text-indigo-400"></i>
               <span>Expenses</span>
@@ -98,10 +81,7 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/Settings"
-                :class="[
-                isActiveLink('/Settings') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition'
-              ]"
+                :class="[isActiveLink('/Settings') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
             >
               <i class="pi pi-cog text-indigo-400"></i>
               <span>Settings</span>
@@ -112,7 +92,10 @@ const isActiveLink = (routePath) => {
 
       <!-- Logout Section -->
       <div class="mt-auto flex justify-center">
-        <button @click="handleLogout" class="flex items-center space-x-2 bg-custom-color text-white py-2 px-4 rounded-md hover:bg-custom-hover-color">
+        <button
+            @click="handleLogout"
+            class="flex items-center space-x-2 bg-custom-color text-white py-2 px-4 rounded-md hover:bg-custom-hover-color"
+        >
           <i class="pi pi-sign-out text-white"></i>
           <span>Logout</span>
         </button>
