@@ -25,10 +25,10 @@ const router = createRouter({
             component: LoginPageView
         },
         {
-            path: '/user-dashboard',
+            path: '/user-dashboard/:userId',
             name: 'UserDashboard',
-            component: DashboardView
-
+            component: DashboardView,
+            props: true,
         },
         {
             path: '/:catchAll(.*)',

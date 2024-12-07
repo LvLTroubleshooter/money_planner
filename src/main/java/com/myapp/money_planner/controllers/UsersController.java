@@ -4,24 +4,22 @@ import com.myapp.money_planner.models.Users;
 import com.myapp.money_planner.services.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000") // Replace with your frontend URL
+@CrossOrigin(origins = "http://localhost:3000")
 public class UsersController {
 
     private final UsersService usersService;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UsersController(UsersService usersService, PasswordEncoder passwordEncoder) {
+    public UsersController(UsersService usersService) {
         this.usersService = usersService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/create")
@@ -80,25 +78,24 @@ public class UsersController {
         if (usersService.getUserByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email already in use.");
         }
-
-        user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
         usersService.createUser(user);
         return ResponseEntity.ok("User registered successfully.");
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        Optional<Users> userOptional = usersService.getUserByUsername(loginRequest.getUsername());
-        if (userOptional.isEmpty()) {
+        Optional<Users> authenticatedUser = usersService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+
+        if (authenticatedUser.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid username or password.");
         }
 
-        Users user = userOptional.get();
-
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getUserPassword())) {
-            return ResponseEntity.badRequest().body("Invalid username or password.");
-        }
-
-        return ResponseEntity.ok("Login successful.");
+        Users user = authenticatedUser.get();
+        return ResponseEntity.ok(Map.of(
+                "message", "Login successful.",
+                "userId", user.getUserId(),
+                "username", user.getUsername()
+        ));
     }
+
 }

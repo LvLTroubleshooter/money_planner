@@ -3,35 +3,49 @@ import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 
-// Refs for form inputs and error message
 const username = ref("");
 const password = ref("");
 const errorMessage = ref("");
 const isLoading = ref(false);
 const router = useRouter();
 
-// Handle login
 const handleLogin = async () => {
   errorMessage.value = ""; // Reset error message
   isLoading.value = true; // Activate loading animation
+
   try {
-    // Send login request to the backend and handle the response
-    await axios.post("http://localhost:8080/api/users/login", {
+    const response = await axios.post("http://localhost:8080/api/users/login", {
       username: username.value,
       password: password.value,
     });
 
-    // Add a 2-second delay before routing
-    setTimeout(async () => {
-      isLoading.value = false; // Deactivate loading animation
-      await router.push("/user-dashboard");
-    }, 2000);
+    console.log("Login response:", response.data); // Debugging log
+
+    if (response.data && response.data.userId && response.data.username) {
+      const { userId, username } = response.data;
+
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("username", username);
+
+      setTimeout(async () => {
+        isLoading.value = false;
+        await router.push(`/user-dashboard/${userId}`);
+      }, 2000);
+    } else {
+      errorMessage.value = "Unexpected response format. Please try again.";
+      isLoading.value = false;
+    }
   } catch (error) {
-    isLoading.value = false; // Deactivate loading animation on error
-    errorMessage.value =
-        error.response?.data || "Invalid username or password. Try again.";
+    console.error("Login Error:", error.response?.data || error.message); // Debugging log
+    isLoading.value = false; // Deactivate loading animation
+    errorMessage.value = error.response?.data || "Invalid username or password. Try again.";
   }
 };
+
+
+
+
+
 </script>
 
 <template>
@@ -78,10 +92,7 @@ const handleLogin = async () => {
         <div>
           <button
               type="submit"
-              :class="[
-              'w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition',
-              isLoading ? 'animate-pulse cursor-not-allowed opacity-75' : 'hover:bg-blue-700',
-            ]"
+              :class="[isLoading ? 'animate-pulse cursor-not-allowed opacity-75' : 'hover:bg-blue-700', 'w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition']"
               :disabled="isLoading"
           >
             {{ isLoading ? "Logging in..." : "Log in" }}
@@ -101,4 +112,3 @@ const handleLogin = async () => {
     </div>
   </div>
 </template>
-

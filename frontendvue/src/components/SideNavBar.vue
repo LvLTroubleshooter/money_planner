@@ -1,19 +1,30 @@
 <script setup>
-import {ref} from 'vue';
-import {useRouter, useRoute, RouterLink} from 'vue-router';
+import { onMounted, ref } from "vue";
+import { useRouter, useRoute, RouterLink } from "vue-router";
 
-const userName = ref('Ismail'); // Replace with dynamic data
-const userInitials = ref('I'); // Replace with dynamic initials or profile picture
+const userName = ref(""); // Dynamic username
+const userInitials = ref(""); // Dynamic initials
 
 const router = useRouter();
 
+// Fetch user details from localStorage on mount
+onMounted(() => {
+  const name = localStorage.getItem("username") || "Guest";
+  userName.value = name;
+  userInitials.value = name.charAt(0).toUpperCase();
+});
+
+// Handle user logout
 const handleLogout = () => {
-  router.push('/');
+  localStorage.removeItem("userId");
+  localStorage.removeItem("username");
+  router.push("/");
 };
 
+// Check if the link is active
 const isActiveLink = (routePath) => {
   const route = useRoute();
-  return route.path.startsWith(routePath); // Match base route and sub-routes
+  return route.path.startsWith(routePath);
 };
 </script>
 
@@ -22,7 +33,9 @@ const isActiveLink = (routePath) => {
     <div class="p-6 flex flex-col space-y-8">
       <!-- Profile Section -->
       <div class="flex items-center space-x-4">
-        <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-xl font-semibold">
+        <div
+            class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-xl font-semibold"
+        >
           <span>{{ userInitials }}</span>
         </div>
         <div class="text-white font-semibold">
@@ -36,7 +49,15 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/user-dashboard"
-                :class="[isActiveLink('/user-dashboard') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
+                :class="[
+                isActiveLink('/user-dashboard') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                'flex',
+                'items-center',
+                'space-x-3',
+                'p-2',
+                'rounded-md',
+                'transition'
+              ]"
             >
               <i class="pi pi-home text-indigo-400"></i>
               <span>Dashboard</span>
@@ -45,7 +66,15 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/goals_page"
-                :class="[isActiveLink('/goals_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
+                :class="[
+                isActiveLink('/goals_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                'flex',
+                'items-center',
+                'space-x-3',
+                'p-2',
+                'rounded-md',
+                'transition'
+              ]"
             >
               <i class="pi pi-bullseye text-indigo-400"></i>
               <span>Goals</span>
@@ -54,7 +83,15 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/categories"
-                :class="[isActiveLink('/categories') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
+                :class="[
+                isActiveLink('/categories') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                'flex',
+                'items-center',
+                'space-x-3',
+                'p-2',
+                'rounded-md',
+                'transition'
+              ]"
             >
               <i class="pi pi-th-large text-indigo-400"></i>
               <span>Categories</span>
@@ -63,7 +100,15 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/income-sources"
-                :class="[isActiveLink('/income-sources') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
+                :class="[
+                isActiveLink('/income-sources') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                'flex',
+                'items-center',
+                'space-x-3',
+                'p-2',
+                'rounded-md',
+                'transition'
+              ]"
             >
               <i class="pi pi-wallet text-indigo-400"></i>
               <span>Income Sources</span>
@@ -72,7 +117,15 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/expenses"
-                :class="[isActiveLink('/expenses') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
+                :class="[
+                isActiveLink('/expenses') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                'flex',
+                'items-center',
+                'space-x-3',
+                'p-2',
+                'rounded-md',
+                'transition'
+              ]"
             >
               <i class="pi pi-credit-card text-indigo-400"></i>
               <span>Expenses</span>
@@ -81,7 +134,15 @@ const isActiveLink = (routePath) => {
           <li>
             <RouterLink
                 to="/Settings"
-                :class="[isActiveLink('/Settings') ? 'bg-indigo-700' : 'hover:bg-indigo-700', 'flex', 'items-center', 'space-x-3', 'p-2', 'rounded-md', 'transition']"
+                :class="[
+                isActiveLink('/Settings') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                'flex',
+                'items-center',
+                'space-x-3',
+                'p-2',
+                'rounded-md',
+                'transition'
+              ]"
             >
               <i class="pi pi-cog text-indigo-400"></i>
               <span>Settings</span>
@@ -113,8 +174,7 @@ const isActiveLink = (routePath) => {
   background-color: rgba(164, 120, 65, 1);
 }
 
-/* Custom shadow for the sidebar */
 .shadow-xl {
-  box-shadow: 4px 0px 12px rgba(0, 0, 0, 0.1), 0px 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1), 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 </style>

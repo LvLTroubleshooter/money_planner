@@ -5,10 +5,9 @@ import com.myapp.money_planner.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-import java.sql.Timestamp;
-
 
 @Service
 public class UsersService {
@@ -20,15 +19,13 @@ public class UsersService {
         this.usersRepository = usersRepository;
     }
 
-    // Create
     public Users createUser(Users user) {
         if (user.getCreatedAt() == null) {
-            user.setCreatedAt(new Timestamp(System.currentTimeMillis())); // Or let DB handle it
+            user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         }
         return usersRepository.save(user);
     }
 
-    // Read
     public Optional<Users> getUserById(Long userId) {
         return usersRepository.findById(userId);
     }
@@ -45,7 +42,6 @@ public class UsersService {
         return usersRepository.findByUsernameOrEmail(username, email);
     }
 
-    // Update
     public Users updateUser(Long userId, Users userDetails) {
         Optional<Users> userOptional = usersRepository.findById(userId);
         if (userOptional.isPresent()) {
@@ -58,7 +54,6 @@ public class UsersService {
         return null;
     }
 
-    // Delete
     public boolean deleteUser(Long userId) {
         if (usersRepository.existsById(userId)) {
             usersRepository.deleteById(userId);
@@ -67,8 +62,22 @@ public class UsersService {
         return false;
     }
 
-    // List all users
     public List<Users> getAllUsers() {
         return usersRepository.findAll();
     }
+
+    public Optional<Users> authenticateUser(String username, String password) {
+        // Retrieve the user by username
+        Optional<Users> userOptional = usersRepository.findByUsername(username);
+
+        if (userOptional.isPresent()) {
+            Users user = userOptional.get();
+            // Directly compare the passwords (plaintext comparison since no hashing)
+            if (password.equals(user.getUserPassword())) {
+                return Optional.of(user);
+            }
+        }
+        return Optional.empty();
+    }
+
 }
