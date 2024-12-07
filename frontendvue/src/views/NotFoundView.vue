@@ -5,7 +5,7 @@ import {defineProps} from "vue";
 defineProps({
   to: {
     type: String,
-    default: "/user-dashboard",
+    default: "/user-dashboard/${userId}",
   }
 });
 

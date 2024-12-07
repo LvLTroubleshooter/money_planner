@@ -48,9 +48,9 @@ const isActiveLink = (routePath) => {
         <ul class="space-y-4">
           <li>
             <RouterLink
-                to="/user-dashboard"
+                to="/user-dashboard/${userId}"
                 :class="[
-                isActiveLink('/user-dashboard') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                isActiveLink('/user-dashboard/${userId}') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
                 'flex',
                 'items-center',
                 'space-x-3',
