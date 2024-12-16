@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/goals")
+@CrossOrigin(origins = "http://localhost:5173")
 public class GoalsController {
 
     private final GoalsService goalsService;
@@ -42,7 +43,8 @@ public class GoalsController {
     }
 
     @GetMapping("/user/{userId}/name/{goalName}")
-    public ResponseEntity<List<Goals>> getGoalsByUserIdAndGoalName(@PathVariable Long userId, @PathVariable String goalName) {
+    public ResponseEntity<List<Goals>> getGoalsByUserIdAndGoalName(@PathVariable Long userId,
+            @PathVariable String goalName) {
         List<Goals> goals = goalsService.getGoalsByUserIdAndGoalName(userId, goalName);
         if (!goals.isEmpty()) {
             return ResponseEntity.ok(goals);
@@ -51,13 +53,14 @@ public class GoalsController {
     }
 
     @PutMapping("/user/{userId}/goal/{goalId}")
-    public ResponseEntity<Goals> updateGoal(@PathVariable Long userId, @PathVariable Long goalId, @RequestBody Goals goal) {
+    public ResponseEntity<Goals> updateGoal(@PathVariable Long userId, @PathVariable Long goalId,
+            @RequestBody Goals goal) {
         Goals updatedGoal = goalsService.updateGoal(userId, goalId, goal);
         return updatedGoal != null ? ResponseEntity.ok(updatedGoal) : ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{goalId}")
-    public ResponseEntity<Void> deleteGoal(@PathVariable Long goalId) {
+    @DeleteMapping("/user/{userId}/goal/{goalId}")
+    public ResponseEntity<Void> deleteGoal(@PathVariable Long userId, @PathVariable Long goalId) {
         boolean deleted = goalsService.deleteGoal(goalId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }

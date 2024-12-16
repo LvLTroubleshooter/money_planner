@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UsersController {
 
     private final UsersService usersService;
@@ -84,7 +84,8 @@ public class UsersController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        Optional<Users> authenticatedUser = usersService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+        Optional<Users> authenticatedUser = usersService.authenticateUser(loginRequest.getUsername(),
+                loginRequest.getPassword());
 
         if (authenticatedUser.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid username or password.");
@@ -94,8 +95,7 @@ public class UsersController {
         return ResponseEntity.ok(Map.of(
                 "message", "Login successful.",
                 "userId", user.getUserId(),
-                "username", user.getUsername()
-        ));
+                "username", user.getUsername()));
     }
 
 }

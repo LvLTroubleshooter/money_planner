@@ -1,30 +1,38 @@
 <script setup>
 import { reactive, defineProps, defineEmits, watch } from "vue";
 
-const emit = defineEmits(["close", "save"]);
-defineProps({
-  goal: Object,
+const props = defineProps({
+  goal: {
+    type: Object,
+    required: true
+  }
 });
 
+const emit = defineEmits(["close", "save"]);
+
 const updatedGoal = reactive({
-  id: null,
-  name: "",
+  goalId: null,
+  goalName: "",
   goalAmount: 0,
   currentAmount: 0,
   deadline: "",
+  user: null
 });
 
-// Watch for changes in the `goal` prop and update `updatedGoal`
-watch(
-    () => goal,
-    (newGoal) => {
-      Object.assign(updatedGoal, newGoal);
-    },
-    { immediate: true }
-);
+// Watch for changes in the props.goal and update updatedGoal
+watch(() => props.goal, (newGoal) => {
+  if (newGoal) {
+    updatedGoal.goalId = newGoal.goalId;
+    updatedGoal.goalName = newGoal.goalName;
+    updatedGoal.goalAmount = newGoal.goalAmount;
+    updatedGoal.currentAmount = newGoal.currentAmount;
+    updatedGoal.deadline = newGoal.deadline;
+    updatedGoal.user = newGoal.user;
+  }
+}, { immediate: true });
 
 const saveGoal = () => {
-  if (updatedGoal.name && updatedGoal.goalAmount && updatedGoal.deadline) {
+  if (updatedGoal.goalName && updatedGoal.goalAmount && updatedGoal.deadline) {
     emit("save", { ...updatedGoal });
     emit("close");
   }
@@ -38,7 +46,7 @@ const saveGoal = () => {
       <div class="mb-4">
         <label class="block text-gray-600 text-sm">Goal Name</label>
         <input
-            v-model="updatedGoal.name"
+            v-model="updatedGoal.goalName"
             type="text"
             class="w-full p-2 border rounded-lg"
             placeholder="Enter goal name"
