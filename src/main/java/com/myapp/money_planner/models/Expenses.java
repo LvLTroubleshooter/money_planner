@@ -2,6 +2,7 @@ package com.myapp.money_planner.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Expenses {
 
     @Id
@@ -18,12 +20,12 @@ public class Expenses {
     @Column(name = "expense_id")
     private Long expenseId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id_FK", referencedColumnName = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id_FK", nullable = false)
     private Users user;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id_FK", referencedColumnName = "category_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id_FK", nullable = false)
     private Categories category;
 
     @Column(name = "amount", nullable = false)
@@ -32,6 +34,6 @@ public class Expenses {
     @Column(name = "expense_date", nullable = false)
     private LocalDate expenseDate;
 
-    @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
     private Timestamp createdAt;
 }

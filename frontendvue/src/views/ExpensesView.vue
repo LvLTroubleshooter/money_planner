@@ -35,11 +35,31 @@ const addExpense = async (newExpense) => {
       user: { userId: parseInt(userId) }
     };
 
-    const response = await axios.post(`/api/expenses/user/${userId}/create`, expenseData);
-    expenses.value.push(response.data);
+    console.log('Sending expense data:', JSON.stringify(expenseData, null, 2));
+
+    const response = await axios.post('/api/expenses/create', expenseData);
+    console.log('Created expense:', response.data);
+    await fetchExpenses();
     showAddModal.value = false;
   } catch (error) {
     console.error('Failed to add expense:', error);
+    console.error('Error details:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+      method: error.config?.method,
+      requestData: error.config?.data
+    });
+
+    let errorMessage = 'Failed to add expense. ';
+    if (error.response?.data?.error) {
+      errorMessage += error.response.data.error;
+    } else if (error.message) {
+      errorMessage += error.message;
+    }
+    alert(errorMessage);
   }
 };
 

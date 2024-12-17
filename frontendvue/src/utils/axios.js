@@ -8,11 +8,17 @@ const axiosInstance = axios.create({
     Accept: "application/json",
   },
   withCredentials: true,
+  timeout: 10000,
 });
 
-// Add request interceptor
+// Add request interceptor for debugging
 axiosInstance.interceptors.request.use(
   (config) => {
+    console.log("Making request:", {
+      method: config.method,
+      url: config.url,
+      data: config.data,
+    });
     const userId = localStorage.getItem("userId");
     if (userId) {
       config.headers["User-ID"] = userId;
@@ -20,14 +26,22 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error("Request error:", error);
     return Promise.reject(error);
   }
 );
 
-// Add response interceptor
+// Add response interceptor for debugging
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("Received response:", {
+      status: response.status,
+      data: response.data,
+    });
+    return response;
+  },
   (error) => {
+    console.error("Response error:", error);
     if (error.response?.status === 403) {
       localStorage.removeItem("userId");
       window.location.href = "/login-page";

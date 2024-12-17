@@ -10,7 +10,7 @@ const error = ref('');
 const newExpense = ref({
     amount: '',
     expenseDate: new Date().toISOString().split('T')[0],
-    categoryId: ''
+    category: null
 });
 
 const fetchCategories = async () => {
@@ -29,25 +29,23 @@ const fetchCategories = async () => {
 };
 
 const saveExpense = () => {
-    if (newExpense.value.amount && newExpense.value.categoryId && newExpense.value.expenseDate) {
-        try {
-            const userId = localStorage.getItem('userId');
-            if (!userId) {
-                error.value = 'No user ID found. Please log in again.';
-                return;
-            }
-
-            emit('save', {
-                amount: parseFloat(newExpense.value.amount),
-                expenseDate: newExpense.value.expenseDate,
-                category: { categoryId: parseInt(newExpense.value.categoryId) },
-                user: { userId: parseInt(userId) }
-            });
-            emit('close');
-        } catch (error) {
-            console.error('Failed to save expense:', error);
-        }
+    if (!newExpense.value.amount || !newExpense.value.category) {
+        alert('Please fill in all required fields');
+        return;
     }
+
+    console.log('Selected category:', newExpense.value.category);
+
+    const expenseData = {
+        amount: parseFloat(newExpense.value.amount),
+        expenseDate: newExpense.value.expenseDate,
+        category: {
+            categoryId: newExpense.value.category.categoryId
+        }
+    };
+
+    console.log('Expense data to send:', expenseData);
+    emit('save', expenseData);
 };
 
 const nextStep = () => {
@@ -114,8 +112,8 @@ onMounted(fetchCategories);
                     </div>
                     <div v-else class="grid grid-cols-2 gap-4">
                         <button v-for="category in categories" :key="category.categoryId"
-                            @click="newExpense.categoryId = category.categoryId; nextStep()"
-                            :class="['p-4 rounded-xl border-2 transition-all hover:border-blue-500 hover:bg-blue-50', newExpense.categoryId === category.categoryId ? 'border-blue-500 bg-blue-50' : 'border-gray-200']">
+                            @click="newExpense.category = category; nextStep()"
+                            :class="['p-4 rounded-xl border-2 transition-all hover:border-blue-500 hover:bg-blue-50', newExpense.category === category ? 'border-blue-500 bg-blue-50' : 'border-gray-200']">
                             <i :class="['pi text-2xl mb-2', getIconByCategory(category.categoryName)]"></i>
                             <p class="font-medium">{{ category.categoryName }}</p>
                         </button>
