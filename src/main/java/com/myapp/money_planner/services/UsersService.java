@@ -1,5 +1,6 @@
 package com.myapp.money_planner.services;
 
+import com.myapp.money_planner.models.Categories;
 import com.myapp.money_planner.models.Users;
 import com.myapp.money_planner.repositories.UsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,9 @@ public class UsersService {
     private final UsersRepository usersRepository;
 
     @Autowired
+    private CategoriesService categoriesService;
+
+    @Autowired
     public UsersService(UsersRepository usersRepository) {
         this.usersRepository = usersRepository;
     }
@@ -23,7 +27,27 @@ public class UsersService {
         if (user.getCreatedAt() == null) {
             user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         }
-        return usersRepository.save(user);
+        // Save the user
+        Users savedUser = usersRepository.save(user);
+
+        // Create default categories for the user
+        createDefaultCategories(savedUser);
+
+        return savedUser;
+    }
+
+    private void createDefaultCategories(Users user) {
+        String[] defaultCategories = {
+                "Food", "Transport", "Entertainment", "Bills",
+                "Shopping", "Health", "Education", "Other"
+        };
+
+        for (String categoryName : defaultCategories) {
+            Categories category = new Categories();
+            category.setUser(user);
+            category.setCategoryName(categoryName);
+            categoriesService.createCategory(category);
+        }
     }
 
     public Optional<Users> getUserById(Long userId) {
