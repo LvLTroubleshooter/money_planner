@@ -11,10 +11,8 @@ const emit = defineEmits(["add-goal"]);
       <div class="text-xl font-bold text-gray-700">Money Planner</div>
 
       <!-- Add Goal Button -->
-      <button
-          @click="$emit('add-goal')"
-          class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition"
-      >
+      <button @click="$emit('add-goal')"
+        class="bg-custom-color text-white px-4 py-2 rounded-lg shadow-md hover:bg-custom-hover-color transition">
         Add Goal
       </button>
     </div>
@@ -22,4 +20,11 @@ const emit = defineEmits(["add-goal"]);
 </template>
 
 <style scoped>
+.bg-custom-color {
+  background-color: rgba(191, 148, 95, 1);
+}
+
+.hover\:bg-custom-hover-color:hover {
+  background-color: rgba(164, 120, 65, 1);
+}
 </style>

@@ -23,6 +23,10 @@ axiosInstance.interceptors.request.use(
     if (userId) {
       config.headers["User-ID"] = userId;
     }
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -42,9 +46,10 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     console.error("Response error:", error);
-    if (error.response?.status === 403) {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
       localStorage.removeItem("userId");
-      window.location.href = "/login-page";
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
