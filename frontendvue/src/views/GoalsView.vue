@@ -30,8 +30,11 @@ const fetchGoals = async () => {
     const response = await axios.get(`/api/goals/user/${userId}`);
     goals.value = response.data;
   } catch (err) {
-    console.error('Failed to fetch goals:', err);
-    error.value = err.response?.data?.error || err.message || 'Failed to fetch goals';
+    if (err.response?.status === 404) {
+      goals.value = [];
+      return;
+    }
+    error.value = 'Unable to load goals. Please try again later.';
   } finally {
     loading.value = false;
   }
@@ -39,20 +42,16 @@ const fetchGoals = async () => {
 
 // Validate goal data
 const validateGoal = (goal) => {
-  console.log('Validating goal:', goal);
-
   if (!goal.goalName?.trim()) {
     throw new Error('Goal name is required');
   }
 
   const goalAmount = parseFloat(goal.goalAmount);
-  console.log('Parsed goal amount:', goalAmount);
   if (isNaN(goalAmount) || goalAmount <= 0) {
     throw new Error('Goal amount must be greater than 0');
   }
 
   const currentAmount = parseFloat(goal.currentAmount || 0);
-  console.log('Parsed current amount:', currentAmount);
   if (isNaN(currentAmount) || currentAmount < 0) {
     throw new Error('Current amount cannot be negative');
   }
@@ -94,23 +93,7 @@ const addGoal = async () => {
       user: { userId: parseInt(userId) }
     };
 
-    // Add detailed logging
-    console.log('Validating goal data:', {
-      goalName: goalData.goalName,
-      goalAmount: goalData.goalAmount,
-      currentAmount: goalData.currentAmount,
-      deadline: goalData.deadline,
-      userId: goalData.user.userId
-    });
-
-    // Check if any values are undefined or null
-    if (!goalData.goalName || !goalData.goalAmount || !goalData.deadline) {
-      throw new Error('Required fields are missing');
-    }
-
     const response = await axios.post('/api/goals/create', goalData);
-    console.log('Response from server:', response.data);
-
     goals.value.push(response.data);
     showAddModal.value = false;
     newGoal.value = {
@@ -209,19 +192,25 @@ onMounted(() => {
         <!-- Goals Grid -->
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div v-for="goal in goals" :key="goal.goalId"
-            class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300">
+            class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group">
             <!-- Progress Bar -->
-            <div class="relative h-2">
-              <div class="absolute inset-0 bg-gray-200"></div>
-              <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500"
-                :style="{ width: `${(goal.currentAmount / goal.goalAmount) * 100}%` }"></div>
+            <div class="relative h-24 bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+              <div class="text-white text-2xl font-bold opacity-75">
+                {{ ((goal.currentAmount / goal.goalAmount) * 100).toFixed(1) }}%
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 h-2 bg-black bg-opacity-20">
+                <div class="h-full bg-amber-400" :style="{ width: `${(goal.currentAmount / goal.goalAmount) * 100}%` }">
+                </div>
+              </div>
             </div>
 
-            <div class="p-6">
+            <div class="p-6 relative">
               <!-- Goal Header -->
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-bold text-gray-800">{{ goal.goalName }}</h3>
-                <div class="flex space-x-2">
+                <h3 class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+                  {{ goal.goalName }}
+                </h3>
+                <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button @click="selectedGoal = { ...goal }; showEditModal = true"
                     class="text-yellow-500 hover:text-yellow-600 transition-colors p-2 hover:bg-yellow-50 rounded-full">
                     <i class="pi pi-pencil"></i>
@@ -234,16 +223,25 @@ onMounted(() => {
               </div>
 
               <!-- Goal Progress -->
-              <div class="space-y-4">
+              <div class="space-y-4 relative">
                 <div class="flex justify-between items-baseline">
-                  <span class="text-3xl font-bold text-gray-900">${{ goal.currentAmount }}</span>
-                  <span class="text-gray-500">of ${{ goal.goalAmount }}</span>
+                  <div>
+                    <span
+                      class="text-3xl font-bold bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
+                      ${{ goal.currentAmount }}
+                    </span>
+                    <span class="text-sm text-gray-500 ml-2">saved</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xl font-semibold text-gray-700">${{ goal.goalAmount }}</span>
+                    <span class="text-sm text-gray-500 ml-1">goal</span>
+                  </div>
                 </div>
-                <div class="text-sm text-gray-500">
-                  Deadline: {{ new Date(goal.deadline).toLocaleDateString() }}
-                </div>
-                <div class="text-sm font-medium text-gray-700">
-                  {{ ((goal.currentAmount / goal.goalAmount) * 100).toFixed(1) }}% Complete
+
+                <div class="text-sm text-gray-500 flex items-center space-x-2">
+                  <i class="pi pi-calendar text-blue-500"></i>
+                  <span>Deadline: </span>
+                  <span>{{ new Date(goal.deadline).toLocaleDateString() }}</span>
                 </div>
               </div>
             </div>
