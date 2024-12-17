@@ -143,25 +143,43 @@ onMounted(() => {
       <ExpensesNavbar @add-expense="showAddModal = true" />
 
       <div class="p-6 pt-20">
-        <!-- Summary Cards -->
+        <!-- Expenses Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div class="bg-white rounded-xl p-6 shadow-sm">
-            <h3 class="text-gray-500 text-sm mb-1">Total Expenses</h3>
-            <p class="text-2xl font-bold text-gray-800">
-              ${{ totalExpenses.toFixed(2) }}
-            </p>
+          <!-- Total Expenses Card -->
+          <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl shadow-xl p-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium opacity-90">Total Expenses</h3>
+              <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                <i class="pi pi-dollar text-xl"></i>
+              </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">${{ totalExpenses.toFixed(2) }}</div>
+            <div class="text-sm opacity-75">All time expenses</div>
           </div>
-          <div class="bg-white rounded-xl p-6 shadow-sm">
-            <h3 class="text-gray-500 text-sm mb-1">This Month</h3>
-            <p class="text-2xl font-bold text-gray-800">
-              ${{ monthlyExpenses.toFixed(2) }}
-            </p>
+
+          <!-- This Month's Expenses Card -->
+          <div class="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl shadow-xl p-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium opacity-90">This Month</h3>
+              <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                <i class="pi pi-calendar text-xl"></i>
+              </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">${{ monthlyExpenses.toFixed(2) }}</div>
+            <div class="text-sm opacity-75">Expenses for {{ new Date().toLocaleString('default', { month: 'long' }) }}
+            </div>
           </div>
-          <div class="bg-white rounded-xl p-6 shadow-sm">
-            <h3 class="text-gray-500 text-sm mb-1">Today</h3>
-            <p class="text-2xl font-bold text-gray-800">
-              ${{ todayExpenses.toFixed(2) }}
-            </p>
+
+          <!-- Today's Expenses Card -->
+          <div class="bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-xl p-6 text-white">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium opacity-90">Today</h3>
+              <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                <i class="pi pi-clock text-xl"></i>
+              </div>
+            </div>
+            <div class="text-3xl font-bold mb-2">${{ todayExpenses.toFixed(2) }}</div>
+            <div class="text-sm opacity-75">Expenses for {{ new Date().toLocaleDateString() }}</div>
           </div>
         </div>
 
