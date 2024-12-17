@@ -1,5 +1,6 @@
 <script setup>
 import SideNavBar from "@/components/SideNavBar.vue";
+import CategoriesNavbar from "@/components/CategoriesNavbar.vue";
 </script>
 
 <template>
@@ -9,9 +10,10 @@ import SideNavBar from "@/components/SideNavBar.vue";
 
     <!-- Main Content -->
     <div class="flex-1 ml-64">
+      <CategoriesNavbar />
       <div class="p-6 pt-20">
         <h1 class="text-2xl font-bold mb-6">Categories</h1>
-        <h1> categories</h1>
+
       </div>
     </div>
   </div>

@@ -1,5 +1,6 @@
 <script setup>
 import SideNavBar from "@/components/SideNavBar.vue";
+import ExpensesNavbar from "@/components/ExpensesNavbar.vue";
 </script>
 
 <template>
@@ -9,6 +10,7 @@ import SideNavBar from "@/components/SideNavBar.vue";
 
     <!-- Main Content -->
     <div class="flex-1 ml-64">
+      <ExpensesNavbar />
       <div class="p-6 pt-20">
         <h1 class="text-2xl font-bold mb-6">Expenses</h1>
         <!-- Add your expenses content here -->

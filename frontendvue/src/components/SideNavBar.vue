@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRouter, useRoute, RouterLink } from "vue-router";
 
+
 const userName = ref(""); // Dynamic username
 const userInitials = ref(""); // Dynamic initials
 
@@ -82,9 +83,9 @@ const isActiveLink = (routePath) => {
           </li>
           <li>
             <RouterLink
-                to="/categories"
+                to="/categories_page"
                 :class="[
-                isActiveLink('/categories') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                isActiveLink('/categories_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
                 'flex',
                 'items-center',
                 'space-x-3',
@@ -99,9 +100,9 @@ const isActiveLink = (routePath) => {
           </li>
           <li>
             <RouterLink
-                to="/income-sources"
+                to="/income_page"
                 :class="[
-                isActiveLink('/income-sources') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                isActiveLink('/income_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
                 'flex',
                 'items-center',
                 'space-x-3',
@@ -116,9 +117,9 @@ const isActiveLink = (routePath) => {
           </li>
           <li>
             <RouterLink
-                to="/expenses"
+                to="/expenses_page"
                 :class="[
-                isActiveLink('/expenses') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                isActiveLink('/expenses_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
                 'flex',
                 'items-center',
                 'space-x-3',
@@ -133,9 +134,9 @@ const isActiveLink = (routePath) => {
           </li>
           <li>
             <RouterLink
-                to="/Settings"
+                to="/settings_page"
                 :class="[
-                isActiveLink('/Settings') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+                isActiveLink('/settings_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
                 'flex',
                 'items-center',
                 'space-x-3',
