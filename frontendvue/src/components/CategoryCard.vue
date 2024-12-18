@@ -17,32 +17,18 @@ const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
 };
-
-const getIconByCategory = (categoryName) => {
-    const icons = {
-        'Food': 'pi-shopping-cart',
-        'Transport': 'pi-car',
-        'Entertainment': 'pi-ticket',
-        'Bills': 'pi-file',
-        'Shopping': 'pi-shopping-bag',
-        'Health': 'pi-heart',
-        'Education': 'pi-book',
-        'Other': 'pi-box'
-    };
-    return icons[categoryName] || 'pi-box';
-};
 </script>
 
 <template>
     <div
         class="group relative bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300">
-        <div :class="`bg-gradient-to-r ${category.color || 'from-gray-500 to-slate-500'} h-2`"></div>
+        <div :class="`h-2 bg-gradient-to-r ${category.color}`"></div>
 
         <div class="p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="p-3 rounded-full bg-gray-100">
-                        <i :class="['pi text-xl', category.icon || 'pi-box']"></i>
+                    <div :class="`p-3 rounded-full bg-gradient-to-r ${category.color}`">
+                        <i :class="['pi text-xl text-white', category.icon]"></i>
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold text-gray-800">{{ category.categoryName }}</h3>

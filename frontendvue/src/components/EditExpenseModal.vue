@@ -16,7 +16,12 @@ const updatedExpense = reactive({
     expenseId: null,
     amount: 0,
     expenseDate: '',
-    category: null,
+    category: {
+        categoryId: null,
+        categoryName: '',
+        icon: '',
+        color: ''
+    },
     user: null
 });
 
@@ -35,14 +40,28 @@ watch(() => props.expense, (newExpense) => {
         updatedExpense.expenseId = newExpense.expenseId;
         updatedExpense.amount = newExpense.amount;
         updatedExpense.expenseDate = newExpense.expenseDate;
-        updatedExpense.category = newExpense.category;
+        updatedExpense.category = {
+            categoryId: newExpense.category.categoryId,
+            categoryName: newExpense.category.categoryName,
+            icon: newExpense.category.icon,
+            color: newExpense.category.color
+        };
         updatedExpense.user = newExpense.user;
     }
 }, { immediate: true });
 
 const saveExpense = () => {
     if (updatedExpense.amount && updatedExpense.category && updatedExpense.expenseDate) {
-        emit('save', { ...updatedExpense });
+        const selectedCategory = categories.value.find(
+            cat => cat.categoryId === updatedExpense.category.categoryId
+        );
+
+        const expenseData = {
+            ...updatedExpense,
+            category: selectedCategory
+        };
+
+        emit('save', expenseData);
         emit('close');
     }
 };
@@ -57,7 +76,8 @@ onMounted(fetchCategories);
 
             <div class="mb-4">
                 <label class="block text-gray-600 text-sm mb-2">Category</label>
-                <select v-model="updatedExpense.category.categoryId" class="w-full p-2 border rounded-lg">
+                <select v-model="updatedExpense.category.categoryId" @change="updateCategory($event)"
+                    class="w-full p-2 border rounded-lg">
                     <option v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
                         {{ category.categoryName }}
                     </option>

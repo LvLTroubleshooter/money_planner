@@ -7,7 +7,12 @@ defineProps({
             return expense &&
                 typeof expense.amount === 'number' &&
                 expense.expenseId !== undefined &&
-                expense.category !== undefined;
+                expense.category !== undefined &&
+                typeof expense.category === 'object' &&
+                expense.category.categoryId !== undefined &&
+                expense.category.categoryName !== undefined &&
+                expense.category.icon !== undefined &&
+                expense.category.color !== undefined;
         }
     }
 });
@@ -24,19 +29,18 @@ const formatDate = (dateString) => {
     <div
         class="group relative bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300">
         <!-- Use category's color for the gradient bar -->
-        <div :class="`bg-gradient-to-r ${expense.category?.color || 'from-blue-500 to-indigo-600'} h-2`"></div>
+        <div :class="`h-2 bg-gradient-to-r ${expense.category.color}`"></div>
 
         <div class="p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div
-                        :class="`p-3 rounded-full bg-gradient-to-r ${expense.category?.color || 'from-blue-500 to-indigo-600'}`">
+                    <div :class="`p-3 rounded-full bg-gradient-to-r ${expense.category.color}`">
                         <!-- Use category's icon -->
-                        <i :class="['pi text-xl text-white', expense.category?.icon || 'pi-tag']"></i>
+                        <i :class="['pi text-xl text-white', expense.category.icon]"></i>
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold text-gray-800">
-                            {{ expense.category?.categoryName || 'Unknown Category' }}
+                            {{ expense.category.categoryName }}
                         </h3>
                         <p class="text-2xl font-bold text-gray-900">${{ expense.amount }}</p>
                         <p class="text-sm text-gray-500">Date: {{ formatDate(expense.expenseDate) }}</p>

@@ -157,19 +157,13 @@ const updateCategory = async (updatedCategory) => {
         icon: categoryData.icon,
         color: categoryData.color
       });
-      // Navigate using router-link pattern
-      await router.push({
-        name: 'expenses',
-        params: { refresh: Date.now() }
-      });
-      await router.push({
-        name: 'categories',
-        params: { refresh: Date.now() }
-      });
+      showEditModal.value = false;
     } catch (error) {
       console.error('Failed to update expenses with new category details:', error);
     }
 
+    // Close the modal after all updates are complete
+    showEditModal.value = false;
   } catch (error) {
     console.error('Failed to update category:', error);
     alert('Failed to update category. Please try again.');
@@ -447,11 +441,10 @@ onMounted(() => {
             class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
             Cancel
           </button>
-          <RouterLink :to="{ name: 'expenses', params: { refresh: Date.now() } }"
-            @click="updateCategory(selectedCategory)"
-            class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 text-center">
+          <button @click="updateCategory(selectedCategory)"
+            class="px-4 py-2 text-white bg-custom-color rounded-lg hover:bg-custom-hover-color text-center">
             Save Changes
-          </RouterLink>
+          </button>
         </div>
       </div>
     </div>
