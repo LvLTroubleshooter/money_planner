@@ -111,27 +111,27 @@ onMounted(() => {
         <!-- Income Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <!-- Total Monthly Income Card -->
-          <div class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl shadow-xl p-6 text-white">
+          <div class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl shadow-lg p-4 text-white">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-medium opacity-90">Total Monthly Income</h3>
+              <h3 class="text-base font-medium opacity-90">Total Monthly Income</h3>
               <div class="p-2 bg-white bg-opacity-20 rounded-lg">
                 <i class="pi pi-dollar text-xl"></i>
               </div>
             </div>
-            <div class="text-4xl font-bold mb-2">${{ totalIncome.toFixed(2) }}</div>
-            <div class="text-sm opacity-75">Combined income from all sources</div>
+            <div class="text-3xl font-bold mb-1">${{ totalIncome.toFixed(2) }}</div>
+            <div class="text-xs opacity-75">Combined income from all sources</div>
           </div>
 
           <!-- Income Sources Count Card -->
-          <div class="bg-gradient-to-br from-rose-400 to-pink-500 rounded-2xl shadow-xl p-6 text-white">
+          <div class="bg-gradient-to-br from-rose-400 to-pink-500 rounded-xl shadow-lg p-4 text-white">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-medium opacity-90">Income Sources</h3>
+              <h3 class="text-base font-medium opacity-90">Income Sources</h3>
               <div class="p-2 bg-white bg-opacity-20 rounded-lg">
                 <i class="pi pi-wallet text-xl"></i>
               </div>
             </div>
-            <div class="text-4xl font-bold mb-2">{{ incomeSources.length }}</div>
-            <div class="text-sm opacity-75">Active income streams</div>
+            <div class="text-3xl font-bold mb-1">{{ incomeSources.length }}</div>
+            <div class="text-xs opacity-75">Active income streams</div>
           </div>
         </div>
 

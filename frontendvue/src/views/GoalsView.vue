@@ -181,12 +181,18 @@ onMounted(() => {
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="goals.length === 0" class="text-center py-8">
-          <p class="text-gray-500 mb-4">No goals found. Start by adding a new goal!</p>
-          <button @click="showAddModal = true"
-            class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors">
-            Add Your First Goal
-          </button>
+        <div v-else-if="goals.length === 0" class="text-center py-12">
+          <div class="bg-white rounded-2xl p-8 shadow-md max-w-md mx-auto">
+            <div class="text-gray-400 mb-4">
+              <i class="pi pi-flag text-5xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Goals Yet</h3>
+            <p class="text-gray-500 mb-6">Start by adding your first financial goal!</p>
+            <button @click="showAddModal = true"
+              class="bg-custom-color text-white px-6 py-2 rounded-lg shadow-md hover:bg-custom-hover-color transition-all">
+              Add Goal
+            </button>
+          </div>
         </div>
 
         <!-- Goals Grid -->
@@ -354,4 +360,21 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.bg-custom-color {
+  background-color: rgba(191, 148, 95, 1) !important;
+}
+
+.hover\:bg-custom-hover-color:hover {
+  background-color: rgba(164, 120, 65, 1) !important;
+}
+
+/* Add these specific button styles */
+button.bg-custom-color {
+  background-color: rgba(191, 148, 95, 1) !important;
+}
+
+button.hover\:bg-custom-hover-color:hover {
+  background-color: rgba(164, 120, 65, 1) !important;
+}
+</style>

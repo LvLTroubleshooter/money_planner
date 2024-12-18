@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import axios from '@/utils/axios';
 import SideNavBar from "@/components/SideNavBar.vue";
 import ExpensesNavbar from "@/components/ExpensesNavbar.vue";
@@ -7,6 +7,7 @@ import ExpenseCard from "@/components/ExpenseCard.vue";
 import AddExpenseModal from "@/components/AddExpenseModal.vue";
 import EditExpenseModal from "@/components/EditExpenseModal.vue";
 import ConfirmationModal from "@/components/ConfirmationModal.vue";
+import { useRouter } from 'vue-router';
 
 const expenses = ref([]);
 const showAddModal = ref(false);
@@ -14,6 +15,7 @@ const showEditModal = ref(false);
 const showConfirmModal = ref(false);
 const selectedExpense = ref(null);
 const expenseToDelete = ref(null);
+const router = useRouter();
 
 // Fetch expenses
 const fetchExpenses = async () => {
@@ -25,6 +27,21 @@ const fetchExpenses = async () => {
     console.error('Failed to fetch expenses:', error);
   }
 };
+
+// Add route watcher to refresh expenses when entering the view
+onMounted(() => {
+  fetchExpenses();
+});
+
+watch(
+  () => router.currentRoute.value.path,
+  (newPath) => {
+    if (newPath === '/expenses') {
+      fetchExpenses();
+    }
+  },
+  { immediate: true }
+);
 
 // Add expense
 const addExpense = async (newExpense) => {
@@ -129,10 +146,6 @@ const todayExpenses = computed(() => {
     .filter(expense => expense.expenseDate === today)
     .reduce((sum, expense) => sum + expense.amount, 0);
 });
-
-onMounted(() => {
-  fetchExpenses();
-});
 </script>
 
 <template>
@@ -184,7 +197,21 @@ onMounted(() => {
         </div>
 
         <!-- Expenses Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-if="expenses.length === 0" class="text-center py-12">
+          <div class="bg-white rounded-2xl p-8 shadow-md max-w-md mx-auto">
+            <div class="text-gray-400 mb-4">
+              <i class="pi pi-credit-card text-5xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Expenses Yet</h3>
+            <p class="text-gray-500 mb-6">Start by adding your first expense!</p>
+            <button @click="showAddModal = true"
+              class="bg-custom-color text-white px-6 py-2 rounded-lg shadow-md hover:bg-custom-hover-color transition-all">
+              Add Expense
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <ExpenseCard v-for="expense in expenses" :key="expense.expenseId" :expense="expense" @edit="openEditModal"
             @delete="handleDeleteClick" />
         </div>
@@ -202,3 +229,13 @@ onMounted(() => {
       @cancel="showConfirmModal = false" :show="showConfirmModal" />
   </div>
 </template>
+
+<style scoped>
+.bg-custom-color {
+  background-color: rgba(191, 148, 95, 1);
+}
+
+.hover\:bg-custom-hover-color:hover {
+  background-color: rgba(164, 120, 65, 1);
+}
+</style>

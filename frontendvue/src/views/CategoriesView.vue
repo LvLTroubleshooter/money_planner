@@ -1,10 +1,14 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { RouterLink } from 'vue-router';
 import axios from '@/utils/axios';
 import SideNavBar from "@/components/SideNavBar.vue";
 import CategoriesNavbar from "@/components/CategoriesNavbar.vue";
 import CategoryCard from "@/components/CategoryCard.vue";
 import ConfirmationModal from "@/components/ConfirmationModal.vue";
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const categories = ref([]);
 const showAddModal = ref(false);
@@ -121,22 +125,64 @@ const openEditModal = (category) => {
 const updateCategory = async (updatedCategory) => {
   try {
     const userId = localStorage.getItem('userId');
+    const categoryData = {
+      categoryId: updatedCategory.categoryId,
+      categoryName: updatedCategory.categoryName,
+      icon: updatedCategory.icon,
+      color: updatedCategory.color,
+      user: { userId: parseInt(userId) }
+    };
+
     const response = await axios.put(
       `/api/categories/user/${userId}/category/${updatedCategory.categoryId}`,
-      updatedCategory
+      categoryData
     );
+
+    // Update local state
     const index = categories.value.findIndex(
       category => category.categoryId === updatedCategory.categoryId
     );
     if (index !== -1) {
-      categories.value[index] = response.data;
+      categories.value[index] = {
+        ...response.data,
+        icon: categoryData.icon,
+        color: categoryData.color
+      };
     }
-    showEditModal.value = false;
+
+    // Update all expenses with this category
+    try {
+      await axios.put(`/api/expenses/updateCategory/${updatedCategory.categoryId}`, {
+        categoryName: categoryData.categoryName,
+        icon: categoryData.icon,
+        color: categoryData.color
+      });
+      // Navigate using router-link pattern
+      await router.push({
+        name: 'expenses',
+        params: { refresh: Date.now() }
+      });
+      await router.push({
+        name: 'categories',
+        params: { refresh: Date.now() }
+      });
+    } catch (error) {
+      console.error('Failed to update expenses with new category details:', error);
+    }
+
   } catch (error) {
     console.error('Failed to update category:', error);
     alert('Failed to update category. Please try again.');
   }
 };
+
+// Compute most used category
+const mostUsedCategory = computed(() => {
+  if (!categories.value.length) return null;
+  // This is a placeholder - you'll need to implement the actual logic
+  // based on how you track category usage in your backend
+  return categories.value[0];
+});
 
 onMounted(() => {
   fetchCategories();
@@ -151,199 +197,261 @@ onMounted(() => {
       <CategoriesNavbar @add-category="showAddModal = true" />
 
       <div class="p-6 pt-20">
-        <!-- Add Category Modal -->
-        <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
-            <!-- Header -->
-            <div class="p-6 border-b">
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-800">Add New Category</h3>
-                <button @click="showAddModal = false" class="text-gray-500 hover:text-gray-700">
-                  <i class="pi pi-times"></i>
-                </button>
+        <!-- Categories Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <!-- Total Categories Card -->
+          <div class="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-lg p-4 text-white">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-base font-medium opacity-90">Total Categories</h3>
+              <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                <i class="pi pi-tags text-xl"></i>
               </div>
             </div>
+            <div class="text-3xl font-bold mb-1">{{ categories.length }}</div>
+            <div class="text-xs opacity-75">Active expense categories</div>
+          </div>
 
-            <!-- Scrollable Content -->
-            <div class="p-6 overflow-y-auto flex-1">
-              <div class="space-y-6">
-                <!-- Category Name -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Category Name
-                  </label>
-                  <input v-model="newCategory.categoryName" type="text"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter category name" />
-                </div>
-
-                <!-- Icon Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Select Icon
-                  </label>
-                  <div class="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
-                    <button v-for="(icon, name) in availableIcons" :key="name" @click="newCategory.icon = icon" :class="['p-3 rounded-lg border-2 transition-all hover:bg-blue-50',
-                      newCategory.icon === icon ? 'border-blue-500 bg-blue-50' : 'border-gray-200']">
-                      <i :class="['pi text-xl', icon]"></i>
-                      <div class="text-xs mt-1 text-gray-600 truncate">{{ name }}</div>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Color Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Select Color Theme
-                  </label>
-                  <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1">
-                    <button v-for="(gradient, name) in availableColors" :key="name"
-                      @click="newCategory.color = gradient"
-                      class="relative h-12 rounded-lg overflow-hidden border-2 transition-all hover:scale-105"
-                      :class="newCategory.color === gradient ? 'border-blue-500 shadow-lg' : 'border-transparent'">
-                      <div :class="`absolute inset-0 bg-gradient-to-r ${gradient}`"></div>
-                      <div class="absolute inset-0 flex items-center justify-center text-white text-sm font-medium">
-                        {{ name }}
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Preview -->
-                <div class="bg-gray-50 rounded-lg p-4">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Preview
-                  </label>
-                  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <div :class="`bg-gradient-to-r ${newCategory.color} h-2`"></div>
-                    <div class="p-4 flex items-center space-x-3">
-                      <div class="p-3 rounded-full bg-gray-100">
-                        <i :class="['pi text-xl', newCategory.icon]"></i>
-                      </div>
-                      <div class="font-medium text-gray-800">
-                        {{ newCategory.categoryName || 'Category Name' }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <!-- Most Used Category Card -->
+          <div class="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-lg p-4 text-white">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-base font-medium opacity-90">Most Used Category</h3>
+              <div class="p-2 bg-white bg-opacity-20 rounded-lg">
+                <i class="pi pi-star text-xl"></i>
               </div>
             </div>
-
-            <!-- Footer -->
-            <div class="p-6 border-t bg-gray-50">
-              <div class="flex justify-end space-x-3">
-                <button @click="showAddModal = false"
-                  class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                  Cancel
-                </button>
-                <button @click="addCategory" class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600">
-                  Add Category
-                </button>
-              </div>
-            </div>
+            <div class="text-3xl font-bold mb-1">{{ mostUsedCategory?.categoryName || 'None' }}</div>
+            <div class="text-xs opacity-75">Based on expense frequency</div>
           </div>
         </div>
 
-        <!-- Edit Modal -->
-        <div v-if="showEditModal"
-          class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
-            <!-- Header -->
-            <div class="p-6 border-b">
-              <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-800">Edit Category</h3>
-                <button @click="showEditModal = false" class="text-gray-500 hover:text-gray-700">
-                  <i class="pi pi-times"></i>
-                </button>
-              </div>
+        <!-- Empty State -->
+        <div v-if="categories.length === 0" class="text-center py-12">
+          <div class="bg-white rounded-2xl p-8 shadow-md max-w-md mx-auto">
+            <div class="text-gray-400 mb-4">
+              <i class="pi pi-tags text-5xl"></i>
             </div>
-
-            <!-- Scrollable Content -->
-            <div class="p-6 overflow-y-auto flex-1">
-              <div class="space-y-6">
-                <!-- Category Name -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Category Name
-                  </label>
-                  <input v-model="selectedCategory.categoryName" type="text"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter category name" />
-                </div>
-
-                <!-- Icon Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Select Icon
-                  </label>
-                  <div class="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
-                    <button v-for="(icon, name) in availableIcons" :key="name" @click="selectedCategory.icon = icon"
-                      :class="['p-3 rounded-lg border-2 transition-all hover:bg-blue-50',
-                        selectedCategory.icon === icon ? 'border-blue-500 bg-blue-50' : 'border-gray-200']">
-                      <i :class="['pi text-xl', icon]"></i>
-                      <div class="text-xs mt-1 text-gray-600 truncate">{{ name }}</div>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Color Selection -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Select Color Theme
-                  </label>
-                  <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1">
-                    <button v-for="(gradient, name) in availableColors" :key="name"
-                      @click="selectedCategory.color = gradient"
-                      class="relative h-12 rounded-lg overflow-hidden border-2 transition-all hover:scale-105"
-                      :class="selectedCategory.color === gradient ? 'border-blue-500 shadow-lg' : 'border-transparent'">
-                      <div :class="`absolute inset-0 bg-gradient-to-r ${gradient}`"></div>
-                      <div class="absolute inset-0 flex items-center justify-center text-white text-sm font-medium">
-                        {{ name }}
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Preview -->
-                <div class="bg-gray-50 rounded-lg p-4">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Preview
-                  </label>
-                  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <div :class="`bg-gradient-to-r ${selectedCategory.color} h-2`"></div>
-                    <div class="p-4 flex items-center space-x-3">
-                      <div class="p-3 rounded-full bg-gray-100">
-                        <i :class="['pi text-xl', selectedCategory.icon]"></i>
-                      </div>
-                      <div class="font-medium text-gray-800">
-                        {{ selectedCategory.categoryName }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="p-6 border-t bg-gray-50">
-              <div class="flex justify-end space-x-3">
-                <button @click="showEditModal = false"
-                  class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-                  Cancel
-                </button>
-                <button @click="updateCategory(selectedCategory)"
-                  class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600">
-                  Save Changes
-                </button>
-              </div>
-            </div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Categories Yet</h3>
+            <p class="text-gray-500 mb-6">Start by adding your first expense category!</p>
+            <button @click="showAddModal = true"
+              class="bg-custom-color text-white px-6 py-2 rounded-lg shadow-md hover:bg-custom-hover-color transition-all">
+              Add Category
+            </button>
           </div>
         </div>
 
         <!-- Categories Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <CategoryCard v-for="category in categories" :key="category.categoryId" :category="category"
-            @edit="openEditModal" @delete="handleDeleteClick" />
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="category in categories" :key="category.categoryId"
+            class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group">
+            <!-- Card Header with Gradient -->
+            <div :class="`h-2 bg-gradient-to-r ${category.color}`"></div>
+
+            <div class="p-6">
+              <!-- Category Header -->
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                  <div :class="`p-3 rounded-full bg-gradient-to-r ${category.color} bg-opacity-10`">
+                    <i :class="['pi text-xl text-white', category.icon]"></i>
+                  </div>
+                  <h3 class="text-xl font-bold text-gray-800 group-hover:text-custom-color transition-colors">
+                    {{ category.categoryName }}
+                  </h3>
+                </div>
+                <div class="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button @click="openEditModal(category)"
+                    class="text-yellow-500 hover:text-yellow-600 transition-colors p-2 hover:bg-yellow-50 rounded-full">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button @click="handleDeleteClick(category.categoryId)"
+                    class="text-red-500 hover:text-red-600 transition-colors p-2 hover:bg-red-50 rounded-full">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Category Details -->
+              <div class="space-y-3">
+                <div class="text-sm text-gray-500 flex items-center space-x-2">
+                  <i class="pi pi-calendar text-custom-color"></i>
+                  <span>Added {{ new Date(category.createdAt).toLocaleDateString() }}</span>
+                </div>
+                <div class="text-sm text-gray-500 flex items-center space-x-2">
+                  <i class="pi pi-chart-bar text-custom-color"></i>
+                  <span>Used in {{ category.expenseCount || 0 }} expenses</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div v-if="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <!-- Header -->
+      <div class="p-6 border-b">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-bold text-gray-800">Add New Category</h3>
+          <button @click="showAddModal = false" class="text-gray-500 hover:text-gray-700">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Content -->
+      <div class="p-6 overflow-y-auto flex-1">
+        <div class="space-y-6">
+          <!-- Category Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
+            <input v-model="newCategory.categoryName" type="text"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter category name" />
+          </div>
+
+          <!-- Icon Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Icon</label>
+            <div class="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
+              <button v-for="(icon, name) in availableIcons" :key="name" @click="newCategory.icon = icon" :class="['p-3 rounded-lg border-2 transition-all hover:bg-blue-50',
+                newCategory.icon === icon ? 'border-blue-500 bg-blue-50' : 'border-gray-200']">
+                <i :class="['pi text-xl', icon]"></i>
+                <div class="text-xs mt-1 text-gray-600 truncate">{{ name }}</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Color Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Color Theme</label>
+            <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1">
+              <button v-for="(gradient, name) in availableColors" :key="name" @click="newCategory.color = gradient"
+                class="relative h-12 rounded-lg overflow-hidden border-2 transition-all hover:scale-105"
+                :class="newCategory.color === gradient ? 'border-blue-500 shadow-lg' : 'border-transparent'">
+                <div :class="`absolute inset-0 bg-gradient-to-r ${gradient}`"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-white text-sm font-medium">
+                  {{ name }}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div :class="`h-2 bg-gradient-to-r ${newCategory.color}`"></div>
+              <div class="p-4 flex items-center space-x-3">
+                <div :class="`p-3 rounded-full bg-gradient-to-r ${newCategory.color}`">
+                  <i :class="['pi text-xl text-white', newCategory.icon]"></i>
+                </div>
+                <div class="font-medium text-gray-800">
+                  {{ newCategory.categoryName || 'Category Name' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="p-6 border-t bg-gray-50">
+        <div class="flex justify-end space-x-3">
+          <button @click="showAddModal = false"
+            class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+            Cancel
+          </button>
+          <button @click="addCategory" class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600">
+            Add Category
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Category Modal -->
+  <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <!-- Header -->
+      <div class="p-6 border-b">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-bold text-gray-800">Edit Category</h3>
+          <button @click="showEditModal = false" class="text-gray-500 hover:text-gray-700">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Content -->
+      <div class="p-6 overflow-y-auto flex-1">
+        <div class="space-y-6">
+          <!-- Category Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
+            <input v-model="selectedCategory.categoryName" type="text"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter category name" />
+          </div>
+
+          <!-- Icon Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Icon</label>
+            <div class="grid grid-cols-4 gap-3 max-h-48 overflow-y-auto p-1">
+              <button v-for="(icon, name) in availableIcons" :key="name" @click="selectedCategory.icon = icon" :class="['p-3 rounded-lg border-2 transition-all hover:bg-blue-50',
+                selectedCategory.icon === icon ? 'border-blue-500 bg-blue-50' : 'border-gray-200']">
+                <i :class="['pi text-xl', icon]"></i>
+                <div class="text-xs mt-1 text-gray-600 truncate">{{ name }}</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Color Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Color Theme</label>
+            <div class="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1">
+              <button v-for="(gradient, name) in availableColors" :key="name" @click="selectedCategory.color = gradient"
+                class="relative h-12 rounded-lg overflow-hidden border-2 transition-all hover:scale-105"
+                :class="selectedCategory.color === gradient ? 'border-blue-500 shadow-lg' : 'border-transparent'">
+                <div :class="`absolute inset-0 bg-gradient-to-r ${gradient}`"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-white text-sm font-medium">
+                  {{ name }}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div :class="`h-2 bg-gradient-to-r ${selectedCategory.color}`"></div>
+              <div class="p-4 flex items-center space-x-3">
+                <div :class="`p-3 rounded-full bg-gradient-to-r ${selectedCategory.color}`">
+                  <i :class="['pi text-xl text-white', selectedCategory.icon]"></i>
+                </div>
+                <div class="font-medium text-gray-800">
+                  {{ selectedCategory.categoryName }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="p-6 border-t bg-gray-50">
+        <div class="flex justify-end space-x-3">
+          <button @click="showEditModal = false"
+            class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+            Cancel
+          </button>
+          <RouterLink :to="{ name: 'expenses', params: { refresh: Date.now() } }"
+            @click="updateCategory(selectedCategory)"
+            class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 text-center">
+            Save Changes
+          </RouterLink>
         </div>
       </div>
     </div>
@@ -354,3 +462,22 @@ onMounted(() => {
     message="Are you sure you want to delete this category? This action cannot be undone." @confirm="confirmDelete"
     @cancel="showConfirmModal = false" :show="showConfirmModal" />
 </template>
+
+<style scoped>
+.bg-custom-color {
+  background-color: rgba(191, 148, 95, 1) !important;
+}
+
+.hover\:bg-custom-hover-color:hover {
+  background-color: rgba(164, 120, 65, 1) !important;
+}
+
+/* Add these specific button styles */
+button.bg-custom-color {
+  background-color: rgba(191, 148, 95, 1) !important;
+}
+
+button.hover\:bg-custom-hover-color:hover {
+  background-color: rgba(164, 120, 65, 1) !important;
+}
+</style>
