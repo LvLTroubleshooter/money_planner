@@ -6,14 +6,12 @@ import SettingsNavbar from "@/components/SettingsNavbar.vue";
 import { toast } from 'vue-sonner'
 
 const user = ref({
-  firstName: '',
-  lastName: '',
   username: '',
   email: '',
   currentPassword: '',
   newPassword: '',
   confirmPassword: '',
-  profilePicture: localStorage.getItem('userProfilePicture') || null
+  profilePicture: null
 });
 
 const loading = ref(false);
@@ -26,6 +24,7 @@ const fetchUserData = async () => {
     const response = await axios.get(`/api/users/${userId}`);
     user.value.username = response.data.username || '';
     user.value.email = response.data.email;
+    user.value.profilePicture = response.data.profilePhotoUrl || null;
   } catch (error) {
     toast('Failed to load user data', {
       style: { background: '#fecaca', color: '#dc2626' }
@@ -55,7 +54,7 @@ const updateProfile = async () => {
   }
 };
 
-const handleImageUpload = (event) => {
+const handleImageUpload = async (event) => {
   const file = event.target.files[0];
   if (file) {
     if (!file.type.match('image.*')) {
@@ -73,6 +72,7 @@ const handleImageUpload = (event) => {
     }
 
     const reader = new FileReader();
+    const userId = localStorage.getItem('userId');
 
     reader.onerror = () => {
       toast('Error reading file', {
@@ -80,14 +80,20 @@ const handleImageUpload = (event) => {
       });
     };
 
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const imageData = e.target.result;
-        user.value.profilePicture = imageData;
-        localStorage.setItem('userProfilePicture', imageData);
-        toast('Profile picture updated successfully', {
-          style: { background: '#dcfce7', color: '#16a34a' }
+        const response = await axios.put(`/api/users/${userId}/profile-photo`, {
+          profilePhotoUrl: imageData,
+          profilePhotoName: file.name
         });
+
+        if (response.data) {
+          user.value.profilePicture = response.data.profilePhotoUrl;
+          toast('Profile picture updated successfully', {
+            style: { background: '#dcfce7', color: '#16a34a' }
+          });
+        }
       } catch (error) {
         toast('Failed to save image', {
           style: { background: '#fecaca', color: '#dc2626' }
@@ -101,9 +107,14 @@ const handleImageUpload = (event) => {
   event.target.value = '';
 };
 
-const removeProfilePicture = () => {
+const removeProfilePicture = async () => {
   try {
-    localStorage.removeItem('userProfilePicture');
+    const userId = localStorage.getItem('userId');
+    await axios.put(`/api/users/${userId}/profile-photo`, {
+      profilePhotoUrl: null,
+      profilePhotoName: null
+    });
+
     user.value.profilePicture = null;
     toast('Profile picture removed', {
       style: { background: '#dcfce7', color: '#16a34a' }

@@ -26,7 +26,7 @@ public class Users {
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
-    @Column(name = "profile_photo_url")
+    @Column(columnDefinition = "LONGTEXT")
     private String profilePhotoUrl;
 
     @Column(name = "profile_photo_name")

@@ -85,11 +85,12 @@ public class UsersService {
         return Optional.empty();
     }
 
-    public Users updateProfilePhoto(Long userId, String photoUrl) {
+    public Users updateProfilePhoto(Long userId, String photoUrl, String photoName) {
         Optional<Users> userOptional = usersRepository.findById(userId);
         if (userOptional.isPresent()) {
             Users user = userOptional.get();
             user.setProfilePhotoUrl(photoUrl);
+            user.setProfilePhotoName(photoName);
             return usersRepository.save(user);
         }
         return null;

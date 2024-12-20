@@ -3,6 +3,7 @@ package com.myapp.money_planner.controllers;
 import com.myapp.money_planner.models.Users;
 import com.myapp.money_planner.services.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,9 +63,15 @@ public class UsersController {
     public ResponseEntity<Users> updateProfilePhoto(
             @PathVariable Long userId,
             @RequestBody Map<String, String> payload) {
-        String photoUrl = payload.get("profilePhotoUrl");
-        Users updatedUser = usersService.updateProfilePhoto(userId, photoUrl);
-        return updatedUser != null ? ResponseEntity.ok(updatedUser) : ResponseEntity.notFound().build();
+        try {
+            String photoUrl = payload.get("profilePhotoUrl");
+            String photoName = payload.get("profilePhotoName");
+            Users updatedUser = usersService.updateProfilePhoto(userId, photoUrl, photoName);
+            return updatedUser != null ? ResponseEntity.ok(updatedUser) : ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @DeleteMapping("/{userId}")
