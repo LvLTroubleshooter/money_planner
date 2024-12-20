@@ -26,6 +26,12 @@ public class Users {
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
+    @Column(name = "profile_photo_url")
+    private String profilePhotoUrl;
+
+    @Column(name = "profile_photo_name")
+    private String profilePhotoName;
+
     @Column(name = "created_at", nullable = true, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 }

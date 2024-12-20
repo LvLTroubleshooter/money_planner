@@ -58,6 +58,15 @@ public class UsersController {
         return updatedUser != null ? ResponseEntity.ok(updatedUser) : ResponseEntity.notFound().build();
     }
 
+    @PutMapping("/{userId}/profile-photo")
+    public ResponseEntity<Users> updateProfilePhoto(
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> payload) {
+        String photoUrl = payload.get("profilePhotoUrl");
+        Users updatedUser = usersService.updateProfilePhoto(userId, photoUrl);
+        return updatedUser != null ? ResponseEntity.ok(updatedUser) : ResponseEntity.notFound().build();
+    }
+
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         boolean isDeleted = usersService.deleteUser(userId);

@@ -48,7 +48,12 @@ public class UsersService {
             Users user = userOptional.get();
             user.setUsername(userDetails.getUsername());
             user.setEmail(userDetails.getEmail());
-            user.setUserPassword(userDetails.getUserPassword());
+            if (userDetails.getProfilePhotoUrl() != null) {
+                user.setProfilePhotoUrl(userDetails.getProfilePhotoUrl());
+            }
+            if (userDetails.getUserPassword() != null && !userDetails.getUserPassword().isEmpty()) {
+                user.setUserPassword(userDetails.getUserPassword());
+            }
             return usersRepository.save(user);
         }
         return null;
@@ -78,6 +83,16 @@ public class UsersService {
             }
         }
         return Optional.empty();
+    }
+
+    public Users updateProfilePhoto(Long userId, String photoUrl) {
+        Optional<Users> userOptional = usersRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            Users user = userOptional.get();
+            user.setProfilePhotoUrl(photoUrl);
+            return usersRepository.save(user);
+        }
+        return null;
     }
 
 }
