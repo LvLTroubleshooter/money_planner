@@ -40,7 +40,7 @@ const handleFilterChange = (filter) => {
 </script>
 
 <template>
-  <div class="flex">
+  <div class="flex bg-custom-bg">
     <!-- Sidebar -->
     <SideNavBar />
 
@@ -50,7 +50,7 @@ const handleFilterChange = (filter) => {
       <DashboardNavbar @filter-change="handleFilterChange" />
 
       <!-- Page Content -->
-      <div class="p-4 pt-20 bg-gray-200 min-h-screen">
+      <div class="p-4 pt-20 min-h-screen">
         <div class="mb-4">
           <SummaryCard :filter="selectedFilter" />
         </div>
@@ -69,4 +69,7 @@ const handleFilterChange = (filter) => {
 
 <style scoped>
 /* Styling unchanged */
+.bg-custom-bg {
+  background-color: rgba(191, 148, 95, 0.1);
+}
 </style>

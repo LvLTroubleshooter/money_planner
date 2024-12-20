@@ -101,7 +101,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex bg-gray-100 min-h-screen">
+  <div class="flex bg-custom-bg min-h-screen">
     <SideNavBar />
 
     <div class="flex-1 ml-64">
@@ -207,5 +207,9 @@ onMounted(() => {
 
 .hover\:bg-custom-hover-color:hover {
   background-color: rgba(164, 120, 65, 1);
+}
+
+.bg-custom-bg {
+  background-color: rgba(191, 148, 95, 0.1);
 }
 </style>
