@@ -1,24 +1,52 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, onBeforeUnmount } from "vue";
 import { useRouter, useRoute, RouterLink } from "vue-router";
+import axios from '@/utils/axios';
 
-
-const userName = ref(""); // Dynamic username
-const userInitials = ref(""); // Dynamic initials
+const userName = ref("");
+const profilePhoto = ref(null);
+const userInitials = ref("");
 
 const router = useRouter();
+const route = useRoute();
 
-// Fetch user details from localStorage on mount
+const fetchUserData = async () => {
+  try {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    const response = await axios.get(`/api/users/${userId}`);
+    userName.value = response.data.username || 'Guest';
+    userInitials.value = userName.value.charAt(0).toUpperCase();
+
+    if (response.data.profilePhotoUrl) {
+      profilePhoto.value = response.data.profilePhotoUrl;
+    } else {
+      profilePhoto.value = null;
+    }
+  } catch (error) {
+    console.error('Failed to fetch user data:', error);
+  }
+};
+
+const handleProfileUpdate = () => {
+  fetchUserData();
+};
+
 onMounted(() => {
-  const name = localStorage.getItem("username") || "Guest";
-  userName.value = name;
-  userInitials.value = name.charAt(0).toUpperCase();
+  fetchUserData();
+  window.addEventListener('profilePhotoUpdated', handleProfileUpdate);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('profilePhotoUpdated', handleProfileUpdate);
 });
 
 // Handle user logout
 const handleLogout = () => {
   localStorage.removeItem("userId");
   localStorage.removeItem("username");
+  localStorage.removeItem("userProfilePicture");
   router.push("/");
 };
 
@@ -34,10 +62,11 @@ const isActiveLink = (routePath) => {
     <div class="p-6 flex flex-col space-y-8">
       <!-- Profile Section -->
       <div class="flex items-center space-x-4">
-        <div
-            class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-xl font-semibold"
-        >
-          <span>{{ userInitials }}</span>
+        <div class="w-12 h-12 rounded-full overflow-hidden">
+          <img v-if="profilePhoto" :src="profilePhoto" alt="Profile" class="w-full h-full object-cover" />
+          <div v-else class="w-full h-full bg-gray-300 flex items-center justify-center text-xl font-semibold">
+            <span>{{ userInitials }}</span>
+          </div>
         </div>
         <div class="text-white font-semibold">
           <p>{{ userName }}</p>
@@ -48,103 +77,85 @@ const isActiveLink = (routePath) => {
       <nav>
         <ul class="space-y-4">
           <li>
-            <RouterLink
-                to="/user-dashboard/${userId}"
-                :class="[
-                isActiveLink('/user-dashboard/${userId}') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex',
-                'items-center',
-                'space-x-3',
-                'p-2',
-                'rounded-md',
-                'transition'
-              ]"
-            >
+            <RouterLink to="/user-dashboard/${userId}" :class="[
+              isActiveLink('/user-dashboard/${userId}') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+              'flex',
+              'items-center',
+              'space-x-3',
+              'p-2',
+              'rounded-md',
+              'transition'
+            ]">
               <i class="pi pi-home text-indigo-400"></i>
               <span>Dashboard</span>
             </RouterLink>
           </li>
           <li>
-            <RouterLink
-                to="/goals_page"
-                :class="[
-                isActiveLink('/goals_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex',
-                'items-center',
-                'space-x-3',
-                'p-2',
-                'rounded-md',
-                'transition'
-              ]"
-            >
+            <RouterLink to="/goals_page" :class="[
+              isActiveLink('/goals_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+              'flex',
+              'items-center',
+              'space-x-3',
+              'p-2',
+              'rounded-md',
+              'transition'
+            ]">
               <i class="pi pi-bullseye text-indigo-400"></i>
               <span>Goals</span>
             </RouterLink>
           </li>
           <li>
-            <RouterLink
-                to="/categories_page"
-                :class="[
-                isActiveLink('/categories_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex',
-                'items-center',
-                'space-x-3',
-                'p-2',
-                'rounded-md',
-                'transition'
-              ]"
-            >
+            <RouterLink to="/categories_page" :class="[
+              isActiveLink('/categories_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+              'flex',
+              'items-center',
+              'space-x-3',
+              'p-2',
+              'rounded-md',
+              'transition'
+            ]">
               <i class="pi pi-th-large text-indigo-400"></i>
               <span>Categories</span>
             </RouterLink>
           </li>
           <li>
-            <RouterLink
-                to="/income_page"
-                :class="[
-                isActiveLink('/income_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex',
-                'items-center',
-                'space-x-3',
-                'p-2',
-                'rounded-md',
-                'transition'
-              ]"
-            >
+            <RouterLink to="/income_page" :class="[
+              isActiveLink('/income_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+              'flex',
+              'items-center',
+              'space-x-3',
+              'p-2',
+              'rounded-md',
+              'transition'
+            ]">
               <i class="pi pi-wallet text-indigo-400"></i>
               <span>Income Sources</span>
             </RouterLink>
           </li>
           <li>
-            <RouterLink
-                to="/expenses_page"
-                :class="[
-                isActiveLink('/expenses_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex',
-                'items-center',
-                'space-x-3',
-                'p-2',
-                'rounded-md',
-                'transition'
-              ]"
-            >
+            <RouterLink to="/expenses_page" :class="[
+              isActiveLink('/expenses_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+              'flex',
+              'items-center',
+              'space-x-3',
+              'p-2',
+              'rounded-md',
+              'transition'
+            ]">
               <i class="pi pi-credit-card text-indigo-400"></i>
               <span>Expenses</span>
             </RouterLink>
           </li>
           <li>
-            <RouterLink
-                to="/settings_page"
-                :class="[
-                isActiveLink('/settings_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
-                'flex',
-                'items-center',
-                'space-x-3',
-                'p-2',
-                'rounded-md',
-                'transition'
-              ]"
-            >
+            <RouterLink to="/settings_page" :class="[
+              isActiveLink('/settings_page') ? 'bg-indigo-700' : 'hover:bg-indigo-700',
+              'flex',
+              'items-center',
+              'space-x-3',
+              'p-2',
+              'rounded-md',
+              'transition'
+            ]">
               <i class="pi pi-cog text-indigo-400"></i>
               <span>Settings</span>
             </RouterLink>
@@ -154,10 +165,8 @@ const isActiveLink = (routePath) => {
 
       <!-- Logout Section -->
       <div class="mt-auto flex justify-center">
-        <button
-            @click="handleLogout"
-            class="flex items-center space-x-2 bg-custom-color text-white py-2 px-4 rounded-md hover:bg-custom-hover-color"
-        >
+        <button @click="handleLogout"
+          class="flex items-center space-x-2 bg-custom-color text-white py-2 px-4 rounded-md hover:bg-custom-hover-color">
           <i class="pi pi-sign-out text-white"></i>
           <span>Logout</span>
         </button>
