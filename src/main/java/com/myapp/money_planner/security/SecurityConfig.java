@@ -18,10 +18,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/profile-photo").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/users/*/profile-photo").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/*/verify-password").permitAll()
                         .anyRequest().permitAll());
         return http.build();
     }

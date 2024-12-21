@@ -147,4 +147,15 @@ public class UsersService {
         return null;
     }
 
+    public boolean verifyPassword(Long userId, String password) {
+        Optional<Users> userOpt = usersRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            Users user = userOpt.get();
+            log.info("Verifying password for user {} - Stored: {}, Provided: {}",
+                    userId, user.getUserPassword(), password);
+            return password != null && password.equals(user.getUserPassword());
+        }
+        return false;
+    }
+
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import axios from '@/utils/axios';
 import SideNavBar from "@/components/SideNavBar.vue";
 import SettingsNavbar from "@/components/SettingsNavbar.vue";
@@ -17,6 +17,36 @@ const user = ref({
 const loading = ref(false);
 
 const fileInput = ref(null);
+
+const passwordValidation = ref({
+  currentPasswordError: false,
+  passwordsMatch: true,
+  passwordLength: false,
+  showValidation: false
+});
+
+watch(() => user.value.newPassword, (newVal) => {
+  if (newVal) {
+    passwordValidation.value.showValidation = true;
+    passwordValidation.value.passwordLength = newVal.length >= 6;
+    passwordValidation.value.passwordsMatch = newVal === user.value.confirmPassword;
+  }
+});
+
+watch(() => user.value.confirmPassword, (newVal) => {
+  if (user.value.newPassword) {
+    passwordValidation.value.showValidation = true;
+    passwordValidation.value.passwordsMatch = newVal === user.value.newPassword;
+  }
+});
+
+watch(() => user.value.currentPassword, (newVal) => {
+  if (newVal) {
+    debouncedVerifyPassword();
+  } else {
+    passwordValidation.value.currentPasswordError = false;
+  }
+});
 
 const fetchUserData = async () => {
   try {
@@ -74,16 +104,24 @@ const updateProfile = async () => {
         style: { background: '#dcfce7', color: '#16a34a' }
       });
 
-      // Clear password fields only if password was updated
+      // Clear password fields and validation states
       if (user.value.currentPassword) {
         user.value.currentPassword = '';
         user.value.newPassword = '';
         user.value.confirmPassword = '';
+        passwordValidation.value = {
+          currentPasswordError: false,
+          passwordsMatch: true,
+          passwordLength: false,
+          showValidation: false
+        };
+        isVerifying.value = false;
       }
     }
   } catch (error) {
     console.error('Update error:', error.response?.data || error.message);
     if (error.response?.data === 'Current password is incorrect') {
+      passwordValidation.value.currentPasswordError = true;
       toast('Current password is incorrect', {
         style: { background: '#fecaca', color: '#dc2626' }
       });
@@ -171,6 +209,76 @@ const triggerFileInput = () => {
   fileInput.value.click();
 };
 
+const isVerifying = ref(false);
+
+const verifyCurrentPassword = async () => {
+  isVerifying.value = true;
+  try {
+    if (!user.value.currentPassword) {
+      passwordValidation.value.currentPasswordError = false;
+      return;
+    }
+
+    const userId = localStorage.getItem('userId');
+    console.log('Sending verification request with:', {
+      userId,
+      currentPassword: user.value.currentPassword
+    });
+
+    const response = await axios.post(`/api/users/${userId}/verify-password`, {
+      currentPassword: user.value.currentPassword
+    });
+
+    console.log('Verification response:', response.data);
+    passwordValidation.value.currentPasswordError = response.data === false;
+
+    // Add delay to see the loading state
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+  } catch (error) {
+    console.error('Password verification error:', error);
+    passwordValidation.value.currentPasswordError = true;
+  } finally {
+    isVerifying.value = false;
+  }
+};
+
+const debounce = (fn, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+};
+
+const debouncedVerifyPassword = debounce(verifyCurrentPassword, 500);
+
+watch(() => user.value.currentPassword, (newVal) => {
+  if (newVal) {
+    console.log('Verifying password:', newVal);
+    debouncedVerifyPassword();
+  } else {
+    passwordValidation.value.currentPasswordError = false;
+  }
+});
+
+const resetValidation = () => {
+  passwordValidation.value = {
+    currentPasswordError: false,
+    passwordsMatch: true,
+    passwordLength: false,
+    showValidation: false
+  };
+  isVerifying.value = false;
+};
+
+watch(() => [user.value.currentPassword, user.value.newPassword, user.value.confirmPassword],
+  ([curr, newPass, confirm]) => {
+    if (!curr && !newPass && !confirm) {
+      resetValidation();
+    }
+  }, { deep: true });
+
 onMounted(fetchUserData);
 </script>
 
@@ -227,18 +335,87 @@ onMounted(fetchUserData);
           <div class="mt-6 space-y-4 max-w-md">
             <div>
               <label class="block text-sm font-semibold text-gray-800 mb-2">Current password</label>
-              <input v-model="user.currentPassword" type="password" autocomplete="current-password"
-                class="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:ring-1 focus:ring-custom-color focus:border-custom-color" />
+              <input v-model="user.currentPassword" type="password" autocomplete="current-password" :class="[
+                'w-full px-3 py-1.5 bg-white border rounded-lg transition-colors duration-200',
+                user.currentPassword && passwordValidation.currentPasswordError
+                  ? 'border-red-500 focus:ring-1 focus:ring-red-500 focus:border-red-500'
+                  : user.currentPassword && !passwordValidation.currentPasswordError
+                    ? 'border-green-500 focus:ring-1 focus:ring-green-500 focus:border-green-500'
+                    : 'border-gray-300 focus:ring-1 focus:ring-custom-color focus:border-custom-color'
+              ]" />
+              <!-- Error message for current password -->
+              <div v-if="user.currentPassword && passwordValidation.showValidation" class="mt-1">
+                <p class="flex items-center space-x-1 text-sm"
+                  :class="passwordValidation.currentPasswordError ? 'text-red-600' : 'text-green-600'">
+                  <i v-if="isVerifying" class="pi pi-spin pi-spinner"></i>
+                  <i v-else class="pi" :class="passwordValidation.currentPasswordError ? 'pi-times' : 'pi-check'"></i>
+                  <span>
+                    <template v-if="isVerifying">Verifying password...</template>
+                    <template v-else>
+                      {{ passwordValidation.currentPasswordError
+                        ? 'Current password is incorrect'
+                        : 'Current password is correct' }}
+                    </template>
+                  </span>
+                </p>
+              </div>
             </div>
+
             <div>
               <label class="block text-sm font-semibold text-gray-800 mb-2">New password</label>
               <input v-model="user.newPassword" type="password" autocomplete="new-password"
-                class="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:ring-1 focus:ring-custom-color focus:border-custom-color" />
+                class="w-full px-3 py-1.5 bg-white border rounded-lg" :class="{
+                  'border-gray-300 focus:ring-1 focus:ring-custom-color focus:border-custom-color': !passwordValidation.showValidation || passwordValidation.passwordLength,
+                  'border-red-500 focus:ring-1 focus:ring-red-500 focus:border-red-500': passwordValidation.showValidation && !passwordValidation.passwordLength
+                }" />
+              <div v-if="passwordValidation.showValidation" class="mt-1 text-sm">
+                <p class="flex items-center space-x-1">
+                  <i class="pi"
+                    :class="passwordValidation.passwordLength ? 'pi-check text-green-500' : 'pi-times text-red-500'"></i>
+                  <span :class="passwordValidation.passwordLength ? 'text-green-600' : 'text-red-600'">
+                    Password must be at least 6 characters
+                  </span>
+                </p>
+              </div>
             </div>
+
             <div>
               <label class="block text-sm font-semibold text-gray-800 mb-2">Confirm new password</label>
               <input v-model="user.confirmPassword" type="password" autocomplete="new-password"
-                class="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:ring-1 focus:ring-custom-color focus:border-custom-color" />
+                class="w-full px-3 py-1.5 bg-white border rounded-lg" :class="{
+                  'border-gray-300 focus:ring-1 focus:ring-custom-color focus:border-custom-color': !passwordValidation.showValidation || passwordValidation.passwordsMatch,
+                  'border-red-500 focus:ring-1 focus:ring-red-500 focus:border-red-500': passwordValidation.showValidation && !passwordValidation.passwordsMatch
+                }" />
+              <div v-if="passwordValidation.showValidation && user.confirmPassword" class="mt-1 text-sm">
+                <p class="flex items-center space-x-1">
+                  <i class="pi"
+                    :class="passwordValidation.passwordsMatch ? 'pi-check text-green-500' : 'pi-times text-red-500'"></i>
+                  <span :class="passwordValidation.passwordsMatch ? 'text-green-600' : 'text-red-600'">
+                    Passwords must match
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Password Requirements -->
+            <div v-if="passwordValidation.showValidation" class="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h4 class="text-sm font-semibold text-gray-700 mb-2">Password Requirements:</h4>
+              <ul class="space-y-1 text-sm">
+                <li class="flex items-center space-x-2">
+                  <i class="pi"
+                    :class="passwordValidation.passwordLength ? 'pi-check text-green-500' : 'pi-times text-gray-400'"></i>
+                  <span :class="passwordValidation.passwordLength ? 'text-green-600' : 'text-gray-600'">
+                    Minimum 6 characters
+                  </span>
+                </li>
+                <li class="flex items-center space-x-2">
+                  <i class="pi"
+                    :class="passwordValidation.passwordsMatch ? 'pi-check text-green-500' : 'pi-times text-gray-400'"></i>
+                  <span :class="passwordValidation.passwordsMatch ? 'text-green-600' : 'text-gray-600'">
+                    Passwords match
+                  </span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

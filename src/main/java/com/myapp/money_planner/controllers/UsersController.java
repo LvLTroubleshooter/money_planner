@@ -127,4 +127,18 @@ public class UsersController {
                 "username", user.getUsername()));
     }
 
+    @PostMapping("/{userId}/verify-password")
+    public ResponseEntity<Boolean> verifyPassword(
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> payload) {
+        try {
+            String currentPassword = payload.get("currentPassword");
+            boolean isValid = usersService.verifyPassword(userId, currentPassword);
+            return ResponseEntity.ok(isValid);
+        } catch (Exception e) {
+            log.error("Error verifying password: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }
