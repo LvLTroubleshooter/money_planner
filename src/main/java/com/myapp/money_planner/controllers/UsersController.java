@@ -2,6 +2,8 @@ package com.myapp.money_planner.controllers;
 
 import com.myapp.money_planner.models.Users;
 import com.myapp.money_planner.services.UsersService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class UsersController {
 
     private final UsersService usersService;
+    private static final Logger log = LoggerFactory.getLogger(UsersController.class);
 
     @Autowired
     public UsersController(UsersService usersService) {
@@ -54,9 +57,19 @@ public class UsersController {
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<Users> updateUser(@PathVariable Long userId, @RequestBody Users userDetails) {
-        Users updatedUser = usersService.updateUser(userId, userDetails);
-        return updatedUser != null ? ResponseEntity.ok(updatedUser) : ResponseEntity.notFound().build();
+    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody Users userDetails) {
+        try {
+            log.debug("Received password update request. Current: {}, New: {}",
+                    userDetails.getCurrentPassword(), userDetails.getNewPassword());
+            Users updatedUser = usersService.updateUser(userId, userDetails);
+            if (updatedUser != null) {
+                return ResponseEntity.ok(updatedUser);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            log.error("Failed to update user: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/{userId}/profile-photo")

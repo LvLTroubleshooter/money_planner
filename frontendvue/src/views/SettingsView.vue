@@ -33,24 +33,65 @@ const fetchUserData = async () => {
 };
 
 const updateProfile = async () => {
-  loading.value = true;
   try {
     const userId = localStorage.getItem('userId');
-    await axios.put(`/api/users/${userId}`, {
+
+    // Validate passwords if being updated
+    if (user.value.currentPassword) {
+      if (!user.value.newPassword || !user.value.confirmPassword) {
+        toast('Please fill in all password fields', {
+          style: { background: '#fecaca', color: '#dc2626' }
+        });
+        return;
+      }
+
+      if (user.value.newPassword !== user.value.confirmPassword) {
+        toast('New passwords do not match', {
+          style: { background: '#fecaca', color: '#dc2626' }
+        });
+        return;
+      }
+    }
+
+    const updateData = {
       username: user.value.username,
       email: user.value.email,
-      profilePicture: user.value.profilePicture
-    });
-    toast('Profile updated successfully', {
-      style: { background: '#dcfce7', color: '#16a34a' }
-    });
-    localStorage.setItem('userProfilePicture', user.value.profilePicture);
+      profilePhotoUrl: user.value.profilePicture
+    };
+
+    // Only include password fields if updating password
+    if (user.value.currentPassword) {
+      updateData.currentPassword = user.value.currentPassword;
+      updateData.newPassword = user.value.newPassword;
+      updateData.confirmPassword = user.value.confirmPassword;
+    }
+
+    // Update user data in database
+    const response = await axios.put(`/api/users/${userId}`, updateData);
+
+    if (response.data) {
+      toast('Profile updated successfully', {
+        style: { background: '#dcfce7', color: '#16a34a' }
+      });
+
+      // Clear password fields only if password was updated
+      if (user.value.currentPassword) {
+        user.value.currentPassword = '';
+        user.value.newPassword = '';
+        user.value.confirmPassword = '';
+      }
+    }
   } catch (error) {
-    toast('Failed to update profile', {
-      style: { background: '#fecaca', color: '#dc2626' }
-    });
-  } finally {
-    loading.value = false;
+    console.error('Update error:', error.response?.data || error.message);
+    if (error.response?.data === 'Current password is incorrect') {
+      toast('Current password is incorrect', {
+        style: { background: '#fecaca', color: '#dc2626' }
+      });
+    } else {
+      toast('Failed to update profile', {
+        style: { background: '#fecaca', color: '#dc2626' }
+      });
+    }
   }
 };
 
@@ -186,17 +227,17 @@ onMounted(fetchUserData);
           <div class="mt-6 space-y-4 max-w-md">
             <div>
               <label class="block text-sm font-semibold text-gray-800 mb-2">Current password</label>
-              <input v-model="user.currentPassword" type="password"
+              <input v-model="user.currentPassword" type="password" autocomplete="current-password"
                 class="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:ring-1 focus:ring-custom-color focus:border-custom-color" />
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-800 mb-2">New password</label>
-              <input v-model="user.newPassword" type="password"
+              <input v-model="user.newPassword" type="password" autocomplete="new-password"
                 class="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:ring-1 focus:ring-custom-color focus:border-custom-color" />
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-800 mb-2">Confirm new password</label>
-              <input v-model="user.confirmPassword" type="password"
+              <input v-model="user.confirmPassword" type="password" autocomplete="new-password"
                 class="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:ring-1 focus:ring-custom-color focus:border-custom-color" />
             </div>
           </div>

@@ -29,6 +29,11 @@ const fetchUserData = async () => {
   }
 };
 
+const handleUserDataUpdate = (event) => {
+  userName.value = event.detail.username;
+  userInitials.value = event.detail.username.charAt(0).toUpperCase();
+};
+
 const handleProfileUpdate = () => {
   fetchUserData();
 };
@@ -36,10 +41,12 @@ const handleProfileUpdate = () => {
 onMounted(() => {
   fetchUserData();
   window.addEventListener('profilePhotoUpdated', handleProfileUpdate);
+  window.addEventListener('userDataUpdated', handleUserDataUpdate);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('profilePhotoUpdated', handleProfileUpdate);
+  window.removeEventListener('userDataUpdated', handleUserDataUpdate);
 });
 
 // Handle user logout

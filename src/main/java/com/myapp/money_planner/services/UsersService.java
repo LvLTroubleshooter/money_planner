@@ -2,6 +2,8 @@ package com.myapp.money_planner.services;
 
 import com.myapp.money_planner.models.Users;
 import com.myapp.money_planner.repositories.UsersRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,8 @@ import java.util.Optional;
 
 @Service
 public class UsersService {
+
+    private static final Logger log = LoggerFactory.getLogger(UsersService.class);
 
     private final UsersRepository usersRepository;
 
@@ -43,19 +47,66 @@ public class UsersService {
     }
 
     public Users updateUser(Long userId, Users userDetails) {
+        log.debug("Updating user {} with details: {}", userId, userDetails);
         Optional<Users> userOptional = usersRepository.findById(userId);
         if (userOptional.isPresent()) {
             Users user = userOptional.get();
-            user.setUsername(userDetails.getUsername());
-            user.setEmail(userDetails.getEmail());
-            if (userDetails.getProfilePhotoUrl() != null) {
+
+            // Handle password update first
+            if (userDetails.getCurrentPassword() != null && !userDetails.getCurrentPassword().isEmpty()) {
+                log.debug("Current password from request: {}", userDetails.getCurrentPassword());
+                log.debug("Stored password: {}", user.getUserPassword());
+
+                // Verify current password
+                if (!userDetails.getCurrentPassword().equals(user.getUserPassword())) {
+                    log.error("Current password is incorrect for user {}", userId);
+                    throw new RuntimeException("Current password is incorrect");
+                }
+
+                // Validate new password
+                if (userDetails.getNewPassword() == null || userDetails.getNewPassword().isEmpty()) {
+                    log.error("New password is required for user {}", userId);
+                    throw new RuntimeException("New password is required");
+                }
+
+                // Update password
+                log.debug("Updating password from {} to {}", user.getUserPassword(), userDetails.getNewPassword());
+                user.setUserPassword(userDetails.getNewPassword());
+                log.debug("Password updated successfully");
+            }
+
+            // Handle other updates...
+            if (userDetails.getUsername() != null && !userDetails.getUsername().isEmpty()) {
+                // Check if username is already taken by another user
+                Optional<Users> existingUser = usersRepository.findByUsername(userDetails.getUsername());
+                if (existingUser.isPresent() && !existingUser.get().getUserId().equals(userId)) {
+                    throw new RuntimeException("Username already taken");
+                }
+                user.setUsername(userDetails.getUsername());
+            }
+
+            if (userDetails.getEmail() != null && !userDetails.getEmail().isEmpty()) {
+                // Check if email is already taken by another user
+                Optional<Users> existingUser = usersRepository.findByEmail(userDetails.getEmail());
+                if (existingUser.isPresent() && !existingUser.get().getUserId().equals(userId)) {
+                    throw new RuntimeException("Email already taken");
+                }
+                user.setEmail(userDetails.getEmail());
+            }
+
+            // Handle profile photo
+            if (userDetails.getProfilePhotoUrl() == null) {
+                user.setProfilePhotoUrl(null);
+                user.setProfilePhotoName(null);
+            } else if (!userDetails.getProfilePhotoUrl().equals(user.getProfilePhotoUrl())) {
                 user.setProfilePhotoUrl(userDetails.getProfilePhotoUrl());
+                user.setProfilePhotoName(userDetails.getProfilePhotoName());
             }
-            if (userDetails.getUserPassword() != null && !userDetails.getUserPassword().isEmpty()) {
-                user.setUserPassword(userDetails.getUserPassword());
-            }
+
+            log.debug("Saving updated user {}", userId);
             return usersRepository.save(user);
         }
+        log.error("User not found with ID: {}", userId);
         return null;
     }
 
