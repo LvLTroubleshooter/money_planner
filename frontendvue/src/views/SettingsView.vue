@@ -64,6 +64,14 @@ const fetchUserData = async () => {
 
 const updateProfile = async () => {
   try {
+    // Check if username is valid
+    if (usernameValidation.value.error) {
+      toast('Please choose a different username', {
+        style: { background: '#fecaca', color: '#dc2626' }
+      });
+      return;
+    }
+
     const userId = localStorage.getItem('userId');
 
     // Validate passwords if being updated
@@ -100,6 +108,18 @@ const updateProfile = async () => {
     const response = await axios.put(`/api/users/${userId}`, updateData);
 
     if (response.data) {
+      // Update localStorage with new username
+      localStorage.setItem('username', user.value.username);
+
+      // Emit events to update sidebar
+      window.dispatchEvent(new CustomEvent('userDataUpdated', {
+        detail: {
+          username: user.value.username,
+          email: user.value.email
+        }
+      }));
+      window.dispatchEvent(new CustomEvent('profilePhotoUpdated'));
+
       toast('Profile updated successfully', {
         style: { background: '#dcfce7', color: '#16a34a' }
       });
@@ -280,6 +300,49 @@ watch(() => [user.value.currentPassword, user.value.newPassword, user.value.conf
   }, { deep: true });
 
 onMounted(fetchUserData);
+
+// Add validation states for username
+const usernameValidation = ref({
+  isChecking: false,
+  error: null
+});
+
+// Debounce function for username check
+const debouncedCheckUsername = debounce(async (username) => {
+  try {
+    if (!username || username === localStorage.getItem('username')) {
+      usernameValidation.value.error = null;
+      return;
+    }
+
+    usernameValidation.value.isChecking = true;
+    const response = await axios.get(`/api/users/username/${username}`);
+
+    if (response.data) {
+      usernameValidation.value.error = 'Username already exists';
+    } else {
+      usernameValidation.value.error = null;
+    }
+  } catch (error) {
+    if (error.response?.status === 404) {
+      // 404 means username is available
+      usernameValidation.value.error = null;
+    } else {
+      console.error('Username check error:', error);
+    }
+  } finally {
+    usernameValidation.value.isChecking = false;
+  }
+}, 500);
+
+// Watch for username changes
+watch(() => user.value.username, (newUsername) => {
+  if (newUsername) {
+    debouncedCheckUsername(newUsername);
+  } else {
+    usernameValidation.value.error = null;
+  }
+});
 </script>
 
 <template>
@@ -314,10 +377,25 @@ onMounted(fetchUserData);
             </div>
 
             <!-- Username -->
-            <div>
+            <div class="mb-4">
               <label class="block text-sm font-semibold text-gray-800 mb-2">Username</label>
-              <input v-model="user.username" type="text"
-                class="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg focus:ring-1 focus:ring-custom-color focus:border-custom-color" />
+              <input v-model="user.username" type="text" :class="[
+                'w-full px-3 py-1.5 bg-white border rounded-lg transition-colors duration-200',
+                usernameValidation.error
+                  ? 'border-red-500 focus:ring-1 focus:ring-red-500 focus:border-red-500'
+                  : 'border-gray-300 focus:ring-1 focus:ring-custom-color focus:border-custom-color'
+              ]" />
+              <!-- Username validation message -->
+              <div class="mt-1 min-h-[20px]">
+                <p v-if="usernameValidation.isChecking" class="text-sm text-gray-500 flex items-center space-x-1">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>Checking username availability...</span>
+                </p>
+                <p v-else-if="usernameValidation.error" class="text-sm text-red-600 flex items-center space-x-1">
+                  <i class="pi pi-times"></i>
+                  <span>{{ usernameValidation.error }}</span>
+                </p>
+              </div>
             </div>
 
             <!-- Email -->
