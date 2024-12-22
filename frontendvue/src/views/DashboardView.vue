@@ -9,6 +9,7 @@ import { ref, onMounted, computed } from "vue";
 const selectedFilter = ref("Week");
 const incomeSources = ref([]);
 const expenses = ref([]);
+const latestGoals = ref([]);
 
 // Compute total income
 const totalIncome = computed(() => {
@@ -44,9 +45,27 @@ const fetchExpenses = async () => {
   }
 };
 
+// Fetch goals - using the same pattern as income and expenses
+const fetchLatestGoals = async () => {
+  try {
+    const userId = localStorage.getItem('userId');
+    const response = await axios.get(`/api/goals/user/${userId}/latest`);
+    latestGoals.value = response.data || [];  // Ensure we always have an array
+  } catch (error) {
+    console.error('Failed to fetch goals:', error);
+    latestGoals.value = [];
+  }
+};
+
+// Calculate goal progress percentage
+const calculateProgress = (currentAmount, goalAmount) => {
+  return ((currentAmount / goalAmount) * 100).toFixed(0);
+};
+
 onMounted(() => {
   fetchIncomes();
   fetchExpenses();
+  fetchLatestGoals();
 });
 
 const handleFilterChange = (filter) => {
@@ -97,16 +116,28 @@ const handleFilterChange = (filter) => {
             <div class="bg-white rounded-xl shadow-md p-4 flex flex-col">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Goals Progress</h3>
-                <button class="text-sm text-gray-500 hover:text-gray-700">View All</button>
+                <button 
+                  @click="$router.push({ name: 'GoalsPage' })" 
+                  class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                  View All
+                </button>
               </div>
               <div class="space-y-4 flex-grow overflow-auto">
-                <div v-for="(goal, index) in 3" :key="index" class="space-y-2">
+                <div v-if="latestGoals.length === 0" class="text-center text-gray-500 py-4">
+                  No goals found
+                </div>
+                <div v-for="goal in latestGoals" :key="goal.goalId" class="space-y-2">
                   <div class="flex justify-between items-center">
-                    <span class="font-medium text-gray-800">Vacation Fund</span>
-                    <span class="text-sm text-gray-500">$2,000 / $5,000</span>
+                    <span class="font-medium text-gray-800">{{ goal.goalName }}</span>
+                    <span class="text-sm text-gray-500">
+                      ${{ goal.currentAmount.toLocaleString() }} / ${{ goal.goalAmount.toLocaleString() }}
+                    </span>
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-blue-500 h-2 rounded-full" :style="{ width: '40%' }"></div>
+                    <div 
+                      class="bg-blue-500 h-2 rounded-full transition-all duration-500" 
+                      :style="{ width: `${calculateProgress(goal.currentAmount, goal.goalAmount)}%` }"
+                    ></div>
                   </div>
                 </div>
               </div>

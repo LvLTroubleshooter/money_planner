@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,5 +84,15 @@ public class GoalsService {
             return true;
         }
         return false;
+    }
+
+    public List<Goals> getLatestGoals(Long userId) {
+        try {
+            List<Goals> goals = goalsRepository.findTop3ByUser_UserIdOrderByCreatedAtDesc(userId);
+            return goals != null ? goals : new ArrayList<>();
+        } catch (Exception e) {
+            logger.error("Error fetching latest goals for user {}: {}", userId, e.getMessage());
+            return new ArrayList<>();
+        }
     }
 }

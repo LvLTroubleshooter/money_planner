@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -105,5 +106,16 @@ public class GoalsController {
     public ResponseEntity<Void> deleteGoal(@PathVariable Long userId, @PathVariable Long goalId) {
         boolean deleted = goalsService.deleteGoal(goalId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/user/{userId}/latest")
+    public ResponseEntity<List<Goals>> getLatestGoals(@PathVariable Long userId) {
+        try {
+            List<Goals> goals = goalsService.getLatestGoals(userId);
+            return ResponseEntity.ok(goals != null ? goals : new ArrayList<>());
+        } catch (Exception e) {
+            logger.error("Error fetching latest goals: {}", e.getMessage());
+            return ResponseEntity.ok(new ArrayList<>());
+        }
     }
 }

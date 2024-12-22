@@ -14,4 +14,6 @@ public interface GoalsRepository extends JpaRepository<Goals, Long> {
     Optional<Goals> findByGoalIdAndUser_UserId(Long goalId, Long userId);
 
     List<Goals> findByUser_UserIdAndGoalNameContainingIgnoreCase(Long userId, String goalName);
+
+    List<Goals> findTop3ByUser_UserIdOrderByCreatedAtDesc(Long userId);
 }
