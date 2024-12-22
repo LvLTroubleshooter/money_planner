@@ -14,35 +14,51 @@ const selectFilter = (filter) => {
 <template>
   <div class="bg-white shadow-md fixed top-0 left-64 right-0 z-50">
     <div class="flex items-center justify-between px-4 py-3">
-      <!-- Existing Content -->
-      <div class="text-xl font-bold text-gray-700">Money Planner</div>
+      <!-- Left Side - Title and Breadcrumb -->
+      <div class="flex items-center space-x-2">
+        <h1 class="text-xl font-bold text-gray-700">Money Planner</h1>
+        <div class="text-sm text-gray-500 flex items-center">
+          <span class="mx-1">/</span>
+          <span>{{ activeFilter.current }}</span>
+        </div>
+      </div>
 
-      <!-- Filters -->
-      <div class="flex space-x-4">
-        <button
-            v-for="filter in filters"
-            :key="filter"
-            :class="[
-            'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
-            activeFilter.current === filter
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-200 text-gray-600 hover:bg-blue-100'
-          ]"
-            @click="selectFilter(filter)"
-        >
-          {{ filter }}
-        </button>
+      <!-- Right Side - Filters -->
+      <div class="flex items-center">
+        <div class="bg-gray-100 rounded-lg p-0.5">
+          <div class="flex space-x-0.5">
+            <button
+              v-for="filter in filters"
+              :key="filter"
+              :class="[
+                'px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200',
+                activeFilter.current === filter
+                  ? 'bg-white text-gray-800 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              ]"
+              @click="selectFilter(filter)"
+            >
+              {{ filter }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.bg-custom-color {
-  background-color: rgba(191, 148, 95, 1);
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
 }
 
-.hover\:bg-custom-hover-color:hover {
-  background-color: rgba(164, 120, 65, 1);
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.z-50 {
+  z-index: 50;
 }
 </style>
