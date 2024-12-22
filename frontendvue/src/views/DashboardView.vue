@@ -1,32 +1,52 @@
 <script setup>
 import SideNavBar from "@/components/SideNavBar.vue";
 import DashboardNavbar from "@/components/DashboardNavbar.vue";
-import SummaryCard from "@/components/SummaryCard.vue";
 import GoalDeadlineOverview from "@/components/GoalDeadlineOverview.vue";
 import IncomeExpenseTrends from "@/components/IncomeExpenseTrends.vue";
-import axios from "axios";
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import axios from "@/utils/axios";
+import { ref, onMounted, computed } from "vue";
 
 const selectedFilter = ref("Week");
-const userId = ref(null);
-const userData = ref({});
+const incomeSources = ref([]);
+const expenses = ref([]);
 
-onMounted(async () => {
-  const route = useRoute();
-  userId.value = route.params.userId;
+// Compute total income
+const totalIncome = computed(() => {
+  return incomeSources.value.reduce((sum, source) => sum + source.amount, 0);
+});
 
-  if (!userId.value) {
-    console.error("No user ID provided in route");
-    return;
-  }
+// Compute total expenses
+const totalExpenses = computed(() => {
+  return expenses.value.reduce((sum, expense) => sum + expense.amount, 0);
+});
 
+// Fetch incomes
+const fetchIncomes = async () => {
   try {
-    const response = await axios.get(`http://localhost:8080/api/users/${userId.value}`);
-    userData.value = response.data;
+    const userId = localStorage.getItem('userId');
+    const response = await axios.get(`/api/incomesources/user/${userId}`);
+    incomeSources.value = response.data;
   } catch (error) {
-    console.error("Failed to fetch user data:", error);
+    console.error('Failed to fetch incomes:', error);
+    incomeSources.value = [];
   }
+};
+
+// Fetch expenses
+const fetchExpenses = async () => {
+  try {
+    const userId = localStorage.getItem('userId');
+    const response = await axios.get(`/api/expenses/user/${userId}`);
+    expenses.value = response.data;
+  } catch (error) {
+    console.error('Failed to fetch expenses:', error);
+    expenses.value = [];
+  }
+};
+
+onMounted(() => {
+  fetchIncomes();
+  fetchExpenses();
 });
 
 const handleFilterChange = (filter) => {
@@ -37,31 +57,27 @@ const handleFilterChange = (filter) => {
 <template>
   <div class="flex bg-custom-bg min-h-screen">
     <SideNavBar />
-
     <div class="flex-1 ml-64">
       <DashboardNavbar @filter-change="handleFilterChange" />
-
       <div class="p-6 pt-24">
-        <!-- Main Grid Layout -->
         <div class="grid grid-cols-12 gap-6">
           <!-- Left Column - 8 columns wide -->
           <div class="col-span-12 lg:col-span-8 space-y-6">
             <!-- Quick Stats Row -->
             <div class="grid grid-cols-2 gap-6">
+              <!-- Total Income Card -->
               <div class="bg-white rounded-xl shadow-md p-4 border-l-4 border-emerald-500">
                 <h3 class="text-gray-500 text-sm font-medium">Total Income</h3>
-                <p class="text-2xl font-bold text-gray-800 mt-2">$4,570.00</p>
-                <span class="text-green-500 text-sm mt-2 flex items-center">
-                  <i class="fas fa-arrow-up mr-1"></i> +12.5%
-                </span>
+                <p class="text-2xl font-bold text-gray-800 mt-2">
+                  ${{ totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                </p>
               </div>
 
               <div class="bg-white rounded-xl shadow-md p-4 border-l-4 border-red-500">
                 <h3 class="text-gray-500 text-sm font-medium">Total Expenses</h3>
-                <p class="text-2xl font-bold text-gray-800 mt-2">$2,890.00</p>
-                <span class="text-red-500 text-sm mt-2 flex items-center">
-                  <i class="fas fa-arrow-down mr-1"></i> -4.2%
-                </span>
+                <p class="text-2xl font-bold text-gray-800 mt-2">
+                  ${{ totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                </p>
               </div>
             </div>
 

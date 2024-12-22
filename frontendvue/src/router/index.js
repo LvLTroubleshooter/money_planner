@@ -74,6 +74,12 @@ const router = createRouter({
       name: "expenses",
       component: ExpensesView,
     },
+    {
+      path: "/dashboard/:userId",
+      name: "dashboard",
+      component: DashboardView,
+      props: true,
+    },
   ],
 });
 

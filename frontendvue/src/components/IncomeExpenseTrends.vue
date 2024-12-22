@@ -10,9 +10,19 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
+  Filler
 } from 'chart.js';
 
-ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Filler
+);
 
 const labels = ref(['January', 'February', 'March', 'April']);
 const incomeData = ref([3000, 4000, 3500, 5000]);

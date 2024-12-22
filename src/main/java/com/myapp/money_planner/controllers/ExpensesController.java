@@ -70,9 +70,13 @@ public class ExpensesController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Expenses>> getAllExpensesByUser(@PathVariable Long userId) {
-        List<Expenses> expenses = expenseService.getAllExpensesByUser(userId);
-        return expenses.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(expenses);
+    public ResponseEntity<List<Expenses>> getUserExpenses(@PathVariable Long userId) {
+        try {
+            List<Expenses> expenses = expenseService.getAllExpensesByUser(userId);
+            return ResponseEntity.ok(expenses);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/user/{userId}/amount-range")
