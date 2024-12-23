@@ -11,15 +11,17 @@ import java.util.Optional;
 @Repository
 public interface ExpensesRepository extends JpaRepository<Expenses, Long> {
 
-    List<Expenses> findAllByUser_UserId(Long userId);
+    List<Expenses> findByUserUserId(Long userId);
 
-    List<Expenses> findAllByUser_UserIdAndAmountBetween(Long userId, Double minAmount, Double maxAmount);
+    List<Expenses> findByUserUserIdAndAmountBetween(Long userId, Double minAmount, Double maxAmount);
 
-    List<Expenses> findAllByUser_UserIdAndCategory_CategoryId(Long userId, Long categoryId);
+    List<Expenses> findByUserUserIdAndCategoryCategoryId(Long userId, Long categoryId);
 
-    List<Expenses> findAllByUser_UserIdAndExpenseDate(Long userId, LocalDate expenseDate);
+    List<Expenses> findByUserUserIdAndExpenseDate(Long userId, LocalDate expenseDate);
 
-    List<Expenses> findAllByUser_UserIdAndExpenseDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
+    List<Expenses> findByUserUserIdAndExpenseDateBetween(Long userId, LocalDate startDate, LocalDate endDate);
 
-    Optional<Expenses> findByUser_UserIdAndExpenseId(Long userId, Long expenseId);
+    Optional<Expenses> findByExpenseIdAndUserUserId(Long expenseId, Long userId);
+
+    List<Expenses> findByCategoryCategoryId(Long categoryId);
 }

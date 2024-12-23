@@ -22,12 +22,22 @@ const formatDate = (dateString) => {
 <template>
     <div
         class="group relative bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300">
-        <div :class="`h-2 bg-gradient-to-r ${category.color}`"></div>
+        <div :class="[
+            'h-2',
+            category.color.includes('from-') 
+                ? `bg-gradient-to-r ${category.color}`
+                : category.color
+        ]"></div>
 
         <div class="p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div :class="`p-3 rounded-full bg-gradient-to-r ${category.color}`">
+                    <div :class="[
+                        'p-3 rounded-full',
+                        category.color.includes('from-') 
+                            ? `bg-gradient-to-r ${category.color}`
+                            : category.color
+                    ]">
                         <i :class="['pi text-xl text-white', category.icon]"></i>
                     </div>
                     <div>
@@ -36,7 +46,7 @@ const formatDate = (dateString) => {
                     </div>
                 </div>
                 <div class="flex space-x-2">
-                    <button @click="$emit('edit', category)"
+                    <button @click="$emit('edit', {...category})"
                         class="text-yellow-500 hover:text-yellow-600 transition-colors p-2 hover:bg-yellow-50 rounded-full">
                         <i class="pi pi-pencil"></i>
                     </button>

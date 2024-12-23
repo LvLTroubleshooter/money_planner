@@ -118,9 +118,12 @@ public class CategoriesController {
             @PathVariable Long userId,
             @PathVariable Long categoryId,
             @RequestBody Categories category) {
-        category.setCategoryId(categoryId);
-        Categories updatedCategory = categoriesService.updateCategory(userId, category);
-        return updatedCategory != null ? ResponseEntity.ok(updatedCategory) : ResponseEntity.notFound().build();
+        try {
+            Categories updatedCategory = categoriesService.updateCategory(userId, categoryId, category);
+            return ResponseEntity.ok(updatedCategory);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @DeleteMapping("/user/{userId}/category/{categoryId}")

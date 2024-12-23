@@ -68,17 +68,17 @@ public class CategoriesService {
         }
     }
 
-    public Categories updateCategory(Long userId, Categories category) {
-        Optional<Categories> existingCategory = categoriesRepository.findByCategoryIdAndUser_UserId(
-                category.getCategoryId(), userId);
-
+    public Categories updateCategory(Long userId, Long categoryId, Categories category) {
+        Optional<Categories> existingCategory = categoriesRepository.findByUserUserIdAndCategoryId(userId, categoryId);
         if (existingCategory.isPresent()) {
             Categories categoryToUpdate = existingCategory.get();
             categoryToUpdate.setCategoryName(category.getCategoryName());
-            // Preserve the original createdAt timestamp
+            categoryToUpdate.setIcon(category.getIcon());
+            categoryToUpdate.setColor(category.getColor());
+            // Don't update the user - keep the existing one
             return categoriesRepository.save(categoryToUpdate);
         }
-        return null;
+        throw new RuntimeException("Category not found");
     }
 
     public boolean deleteCategory(Long userId, Long categoryId) {

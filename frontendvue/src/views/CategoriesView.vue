@@ -38,16 +38,24 @@ const availableIcons = {
 };
 
 const availableColors = {
-  'Orange to Red': 'from-orange-500 to-red-500',
-  'Blue to Indigo': 'from-blue-500 to-indigo-500',
-  'Purple to Pink': 'from-purple-500 to-pink-500',
-  'Yellow to Orange': 'from-yellow-500 to-orange-500',
-  'Green to Teal': 'from-green-500 to-teal-500',
-  'Red to Pink': 'from-red-500 to-pink-500',
-  'Blue to Purple': 'from-blue-500 to-purple-500',
-  'Teal to Cyan': 'from-teal-500 to-cyan-500',
-  'Indigo to Purple': 'from-indigo-500 to-purple-500',
-  'Pink to Rose': 'from-pink-500 to-rose-500'
+  // Gradients - More distinct combinations
+  'Sunset': 'from-orange-500 to-red-500',
+  'Ocean': 'from-blue-500 to-cyan-500',
+  'Forest': 'from-green-500 to-emerald-500',
+  'Galaxy': 'from-purple-500 to-pink-500',
+  // Solid Colors - All unique and vibrant
+  'Ruby': 'bg-red-500',          // Bright red
+  'Royal': 'bg-blue-600',        // Deep blue
+  'Emerald': 'bg-emerald-500',   // Rich green
+  'Violet': 'bg-purple-600',     // Deep purple
+  'Gold': 'bg-amber-400',        // Bright gold
+  'Turquoise': 'bg-teal-400',    // Bright turquoise
+  'Magenta': 'bg-pink-500',      // Bright pink
+  'Charcoal': 'bg-gray-700',     // Dark gray
+  'Orange': 'bg-orange-500',     // Bright orange
+  'Sky': 'bg-sky-400',          // Light blue
+  'Lime': 'bg-lime-500',        // Bright lime
+  'Indigo': 'bg-indigo-500'     // Deep indigo
 };
 
 const newCategory = ref({
@@ -122,51 +130,47 @@ const openEditModal = (category) => {
   showEditModal.value = true;
 };
 
-const updateCategory = async (updatedCategory) => {
+const updateCategory = async () => {
   try {
     const userId = localStorage.getItem('userId');
+    if (!userId) {
+      throw new Error('User not found. Please log in again.');
+    }
+
+    // First update the category
     const categoryData = {
-      categoryId: updatedCategory.categoryId,
-      categoryName: updatedCategory.categoryName,
-      icon: updatedCategory.icon,
-      color: updatedCategory.color,
+      categoryId: selectedCategory.value.categoryId,
+      categoryName: selectedCategory.value.categoryName,
+      icon: selectedCategory.value.icon,
+      color: selectedCategory.value.color,
       user: { userId: parseInt(userId) }
     };
 
     const response = await axios.put(
-      `/api/categories/user/${userId}/category/${updatedCategory.categoryId}`,
+      `/api/categories/user/${userId}/category/${selectedCategory.value.categoryId}`,
       categoryData
     );
 
-    // Update local state
-    const index = categories.value.findIndex(
-      category => category.categoryId === updatedCategory.categoryId
-    );
-    if (index !== -1) {
-      categories.value[index] = {
-        ...response.data,
-        icon: categoryData.icon,
-        color: categoryData.color
-      };
-    }
-
-    // Update all expenses with this category
+    // Then update all expenses with this category
     try {
-      await axios.put(`/api/expenses/updateCategory/${updatedCategory.categoryId}`, {
-        categoryName: categoryData.categoryName,
-        icon: categoryData.icon,
-        color: categoryData.color
-      });
-      showEditModal.value = false;
+      await axios.put(
+        `/api/expenses/updateCategory/${selectedCategory.value.categoryId}`,
+        response.data
+      );
     } catch (error) {
       console.error('Failed to update expenses with new category details:', error);
     }
 
-    // Close the modal after all updates are complete
+    // Update local state
+    const index = categories.value.findIndex(cat => cat.categoryId === selectedCategory.value.categoryId);
+    if (index !== -1) {
+      categories.value[index] = response.data;
+    }
+
     showEditModal.value = false;
+    await fetchCategories(); // Refresh the categories list
   } catch (error) {
     console.error('Failed to update category:', error);
-    alert('Failed to update category. Please try again.');
   }
 };
 
@@ -244,7 +248,12 @@ onMounted(() => {
               <!-- Category Header -->
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
-                  <div :class="`p-3 rounded-full bg-gradient-to-r ${category.color} bg-opacity-10`">
+                  <div :class="[
+                    'p-3 rounded-full flex items-center justify-center',
+                    category.color.includes('from-') 
+                      ? `bg-gradient-to-r ${category.color}`
+                      : category.color.replace('bg-', 'bg-opacity-100 bg-')
+                  ]">
                     <i :class="['pi text-xl text-white', category.icon]"></i>
                   </div>
                   <h3 class="text-xl font-bold text-gray-800 group-hover:text-custom-color transition-colors">
@@ -311,10 +320,20 @@ onMounted(() => {
             <div class="bg-gray-50 rounded-lg p-4">
               <label class="block text-sm font-medium text-gray-700 mb-3">Preview</label>
               <div class="bg-white rounded-xl shadow-sm overflow-hidden transform hover:scale-105 transition-all duration-300">
-                <div :class="`h-2 bg-gradient-to-r ${newCategory.color}`"></div>
+                <div :class="[
+                  'h-2',
+                  newCategory.color.includes('from-') 
+                    ? `bg-gradient-to-r ${newCategory.color}`
+                    : newCategory.color
+                ]"></div>
                 <div class="p-6">
                   <div class="flex items-center space-x-3 mb-4">
-                    <div :class="`p-3 rounded-full bg-gradient-to-r ${newCategory.color}`">
+                    <div :class="[
+                      'p-3 rounded-full flex items-center justify-center',
+                      newCategory.color.includes('from-') 
+                        ? `bg-gradient-to-r ${newCategory.color}`
+                        : newCategory.color.replace('bg-', 'bg-opacity-100 bg-')
+                    ]">
                       <i :class="['pi text-xl text-white', newCategory.icon]"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-800">
@@ -337,17 +356,16 @@ onMounted(() => {
             <!-- Icon Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-3">Select Icon</label>
-              <div class="grid grid-cols-4 gap-3 bg-gray-50 p-4 rounded-lg max-h-[200px] overflow-y-auto scrollbar-thin">
+              <div class="grid grid-cols-8 gap-2 bg-gray-50 p-4 rounded-lg">
                 <button v-for="(icon, name) in availableIcons" :key="name" 
                   @click="newCategory.icon = icon" 
                   :class="[
-                    'p-3 rounded-lg transition-all hover:bg-white hover:shadow-md',
+                    'p-3 rounded-lg transition-all hover:bg-white hover:shadow-md flex items-center justify-center aspect-square',
                     newCategory.icon === icon 
                       ? 'bg-white shadow-md border-2 border-custom-color' 
                       : 'bg-gray-100 border-2 border-transparent'
                   ]">
                   <i :class="['pi text-xl', icon]"></i>
-                  <div class="text-xs mt-1 text-gray-600 truncate">{{ name }}</div>
                 </button>
               </div>
             </div>
@@ -355,15 +373,15 @@ onMounted(() => {
             <!-- Color Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-3">Select Color Theme</label>
-              <div class="grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg max-h-[200px] overflow-y-auto scrollbar-thin">
-                <button v-for="(gradient, name) in availableColors" :key="name" 
-                  @click="newCategory.color = gradient"
-                  class="relative h-14 rounded-lg overflow-hidden transition-all hover:shadow-lg"
-                  :class="newCategory.color === gradient ? 'ring-2 ring-custom-color shadow-lg scale-105' : ''">
-                  <div :class="`absolute inset-0 bg-gradient-to-r ${gradient}`"></div>
-                  <div class="absolute inset-0 flex items-center justify-center text-white text-sm font-medium">
-                    {{ name }}
-                  </div>
+              <div class="grid grid-cols-8 gap-2 bg-gray-50 p-4 rounded-lg">
+                <button v-for="(color, name) in availableColors" :key="name" 
+                  @click="newCategory.color = color"
+                  class="relative w-8 h-8 rounded-lg overflow-hidden transition-all hover:shadow-lg hover:scale-105"
+                  :class="newCategory.color === color ? 'ring-2 ring-custom-color shadow-lg scale-105' : ''">
+                  <div :class="[
+                    'absolute inset-0',
+                    color.includes('from-') ? `bg-gradient-to-r ${color}` : color
+                  ]"></div>
                 </button>
               </div>
             </div>
@@ -417,10 +435,20 @@ onMounted(() => {
             <div class="bg-gray-50 rounded-lg p-4">
               <label class="block text-sm font-medium text-gray-700 mb-3">Preview</label>
               <div class="bg-white rounded-xl shadow-sm overflow-hidden transform hover:scale-105 transition-all duration-300">
-                <div :class="`h-2 bg-gradient-to-r ${selectedCategory.color}`"></div>
+                <div :class="[
+                  'h-2',
+                  selectedCategory.color.includes('from-') 
+                    ? `bg-gradient-to-r ${selectedCategory.color}`
+                    : selectedCategory.color
+                ]"></div>
                 <div class="p-6">
                   <div class="flex items-center space-x-3 mb-4">
-                    <div :class="`p-3 rounded-full bg-gradient-to-r ${selectedCategory.color}`">
+                    <div :class="[
+                      'p-3 rounded-full flex items-center justify-center',
+                      selectedCategory.color.includes('from-') 
+                        ? `bg-gradient-to-r ${selectedCategory.color}`
+                        : selectedCategory.color.replace('bg-', 'bg-opacity-100 bg-')
+                    ]">
                       <i :class="['pi text-xl text-white', selectedCategory.icon]"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-800">
@@ -443,17 +471,16 @@ onMounted(() => {
             <!-- Icon Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-3">Select Icon</label>
-              <div class="grid grid-cols-4 gap-3 bg-gray-50 p-4 rounded-lg max-h-[200px] overflow-y-auto scrollbar-thin">
+              <div class="grid grid-cols-8 gap-2 bg-gray-50 p-4 rounded-lg">
                 <button v-for="(icon, name) in availableIcons" :key="name" 
                   @click="selectedCategory.icon = icon" 
                   :class="[
-                    'p-3 rounded-lg transition-all hover:bg-white hover:shadow-md',
+                    'p-3 rounded-lg transition-all hover:bg-white hover:shadow-md flex items-center justify-center aspect-square',
                     selectedCategory.icon === icon 
                       ? 'bg-white shadow-md border-2 border-custom-color' 
                       : 'bg-gray-100 border-2 border-transparent'
                   ]">
                   <i :class="['pi text-xl', icon]"></i>
-                  <div class="text-xs mt-1 text-gray-600 truncate">{{ name }}</div>
                 </button>
               </div>
             </div>
@@ -461,15 +488,15 @@ onMounted(() => {
             <!-- Color Selection -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-3">Select Color Theme</label>
-              <div class="grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg max-h-[200px] overflow-y-auto scrollbar-thin">
-                <button v-for="(gradient, name) in availableColors" :key="name" 
-                  @click="selectedCategory.color = gradient"
-                  class="relative h-14 rounded-lg overflow-hidden transition-all hover:shadow-lg"
-                  :class="selectedCategory.color === gradient ? 'ring-2 ring-custom-color shadow-lg scale-105' : ''">
-                  <div :class="`absolute inset-0 bg-gradient-to-r ${gradient}`"></div>
-                  <div class="absolute inset-0 flex items-center justify-center text-white text-sm font-medium">
-                    {{ name }}
-                  </div>
+              <div class="grid grid-cols-8 gap-2 bg-gray-50 p-4 rounded-lg">
+                <button v-for="(color, name) in availableColors" :key="name" 
+                  @click="selectedCategory.color = color"
+                  class="relative w-8 h-8 rounded-lg overflow-hidden transition-all hover:shadow-lg hover:scale-105"
+                  :class="selectedCategory.color === color ? 'ring-2 ring-custom-color shadow-lg scale-105' : ''">
+                  <div :class="[
+                    'absolute inset-0',
+                    color.includes('from-') ? `bg-gradient-to-r ${color}` : color
+                  ]"></div>
                 </button>
               </div>
             </div>
@@ -484,7 +511,7 @@ onMounted(() => {
             class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all">
             Cancel
           </button>
-          <button @click="updateCategory(selectedCategory)"
+          <button @click="updateCategory"
             class="px-4 py-2 text-white bg-custom-color rounded-lg hover:bg-custom-hover-color transition-all">
             Save Changes
           </button>

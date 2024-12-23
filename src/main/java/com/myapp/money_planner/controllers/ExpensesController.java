@@ -1,7 +1,8 @@
 package com.myapp.money_planner.controllers;
 
+import com.myapp.money_planner.models.Categories;
 import com.myapp.money_planner.models.Expenses;
-import com.myapp.money_planner.services.ExpenseService;
+import com.myapp.money_planner.services.ExpensesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,11 @@ public class ExpensesController {
 
     private static final Logger logger = LoggerFactory.getLogger(ExpensesController.class);
 
-    private final ExpenseService expenseService;
+    private final ExpensesService expensesService;
 
     @Autowired
-    public ExpensesController(ExpenseService expenseService) {
-        this.expenseService = expenseService;
+    public ExpensesController(ExpensesService expensesService) {
+        this.expensesService = expensesService;
     }
 
     @PostMapping("/create")
@@ -55,7 +56,7 @@ public class ExpensesController {
                         });
             }
 
-            Expenses newExpense = expenseService.createExpense(expense);
+            Expenses newExpense = expensesService.createExpense(expense);
             logger.info("Created expense: {}", newExpense);
             return ResponseEntity.ok(newExpense);
         } catch (Exception e) {
@@ -72,7 +73,7 @@ public class ExpensesController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Expenses>> getUserExpenses(@PathVariable Long userId) {
         try {
-            List<Expenses> expenses = expenseService.getAllExpensesByUser(userId);
+            List<Expenses> expenses = expensesService.getAllExpensesByUser(userId);
             return ResponseEntity.ok(expenses);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
@@ -82,14 +83,14 @@ public class ExpensesController {
     @GetMapping("/user/{userId}/amount-range")
     public ResponseEntity<List<Expenses>> getExpensesByAmountRange(
             @PathVariable Long userId, @RequestParam Double minAmount, @RequestParam Double maxAmount) {
-        List<Expenses> expenses = expenseService.getExpensesByAmountRange(userId, minAmount, maxAmount);
+        List<Expenses> expenses = expensesService.getExpensesByAmountRange(userId, minAmount, maxAmount);
         return expenses.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(expenses);
     }
 
     @GetMapping("/user/{userId}/category/{categoryId}")
     public ResponseEntity<List<Expenses>> getExpensesByCategory(
             @PathVariable Long userId, @PathVariable Long categoryId) {
-        List<Expenses> expenses = expenseService.getExpensesByCategory(userId, categoryId);
+        List<Expenses> expenses = expensesService.getExpensesByCategory(userId, categoryId);
         return expenses.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(expenses);
     }
 
@@ -98,20 +99,32 @@ public class ExpensesController {
             @PathVariable Long userId, @RequestParam String startDate, @RequestParam String endDate) {
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
-        List<Expenses> expenses = expenseService.getExpensesByDateRange(userId, start, end);
+        List<Expenses> expenses = expensesService.getExpensesByDateRange(userId, start, end);
         return expenses.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(expenses);
     }
 
     @PutMapping("/user/{userId}/expense/{expenseId}")
     public ResponseEntity<Expenses> updateExpense(
             @PathVariable Long userId, @PathVariable Long expenseId, @RequestBody Expenses expense) {
-        Expenses updatedExpense = expenseService.updateExpense(userId, expenseId, expense);
+        Expenses updatedExpense = expensesService.updateExpense(userId, expenseId, expense);
         return updatedExpense != null ? ResponseEntity.ok(updatedExpense) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/user/{userId}/expense/{expenseId}")
     public ResponseEntity<Void> deleteExpense(@PathVariable Long userId, @PathVariable Long expenseId) {
-        boolean deleted = expenseService.deleteExpense(userId, expenseId);
+        boolean deleted = expensesService.deleteExpense(userId, expenseId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/updateCategory/{categoryId}")
+    public ResponseEntity<?> updateExpensesCategory(@PathVariable Long categoryId,
+            @RequestBody Categories updatedCategory) {
+        try {
+            List<Expenses> updatedExpenses = expensesService.updateExpensesCategory(categoryId, updatedCategory);
+            return ResponseEntity.ok(updatedExpenses);
+        } catch (Exception e) {
+            logger.error("Error updating expenses category: {}", e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

@@ -14,4 +14,6 @@ public interface CategoriesRepository extends JpaRepository<Categories, Long> {
     Optional<Categories> findByCategoryIdAndUser_UserId(Long categoryId, Long userId);
 
     List<Categories> findTop3ByUser_UserIdOrderByCreatedAtDesc(Long userId);
+
+    Optional<Categories> findByUserUserIdAndCategoryId(Long userId, Long categoryId);
 }
