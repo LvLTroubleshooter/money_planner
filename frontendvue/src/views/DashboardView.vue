@@ -10,6 +10,7 @@ const selectedFilter = ref("Week");
 const incomeSources = ref([]);
 const expenses = ref([]);
 const latestGoals = ref([]);
+const latestCategories = ref([]);
 
 // Compute total income
 const totalIncome = computed(() => {
@@ -57,6 +58,18 @@ const fetchLatestGoals = async () => {
   }
 };
 
+// Fetch latest categories
+const fetchLatestCategories = async () => {
+  try {
+    const userId = localStorage.getItem('userId');
+    const response = await axios.get(`/api/categories/user/${userId}/latest`);
+    latestCategories.value = response.data || [];
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    latestCategories.value = [];
+  }
+};
+
 // Calculate goal progress percentage
 const calculateProgress = (currentAmount, goalAmount) => {
   return ((currentAmount / goalAmount) * 100).toFixed(0);
@@ -66,6 +79,7 @@ onMounted(() => {
   fetchIncomes();
   fetchExpenses();
   fetchLatestGoals();
+  fetchLatestCategories();
 });
 
 const handleFilterChange = (filter) => {
@@ -145,17 +159,26 @@ const handleFilterChange = (filter) => {
 
             <!-- Spending Categories -->
             <div class="bg-white rounded-xl shadow-md p-4 flex flex-col">
-              <h3 class="text-lg font-semibold text-gray-800 mb-4">Top Categories</h3>
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Top Categories</h3>
+                <button 
+                  @click="$router.push({ name: 'categoriesPage' })" 
+                  class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                  View All
+                </button>
+              </div>
               <div class="space-y-3 flex-grow overflow-auto">
-                <div v-for="(category, index) in ['Shopping', 'Food', 'Transport']" :key="index"
-                     class="flex items-center justify-between p-2">
+                <div v-if="latestCategories.length === 0" class="text-center text-gray-500 py-4">
+                  No categories found
+                </div>
+                <div v-for="category in latestCategories" :key="category.categoryId"
+                     class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors">
                   <div class="flex items-center space-x-3">
                     <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                      <i class="fas fa-shopping-bag text-gray-500"></i>
+                      <i :class="[`pi ${category.icon}`, 'text-gray-500']"></i>
                     </div>
-                    <span class="font-medium text-gray-700">{{ category }}</span>
+                    <span class="font-medium text-gray-700">{{ category.categoryName }}</span>
                   </div>
-                  <span class="text-gray-600">$580.00</span>
                 </div>
               </div>
             </div>

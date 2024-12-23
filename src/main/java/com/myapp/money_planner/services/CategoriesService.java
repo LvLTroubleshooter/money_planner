@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,5 +88,15 @@ public class CategoriesService {
             return true;
         }
         return false;
+    }
+
+    public List<Categories> getLatestCategories(Long userId) {
+        try {
+            List<Categories> categories = categoriesRepository.findTop3ByUser_UserIdOrderByCreatedAtDesc(userId);
+            return categories != null ? categories : new ArrayList<>();
+        } catch (Exception e) {
+            logger.error("Error fetching latest categories for user {}: {}", userId, e.getMessage());
+            return new ArrayList<>();
+        }
     }
 }

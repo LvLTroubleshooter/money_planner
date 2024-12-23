@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -126,5 +127,18 @@ public class CategoriesController {
     public ResponseEntity<Void> deleteCategory(@PathVariable Long userId, @PathVariable Long categoryId) {
         boolean deleted = categoriesService.deleteCategory(userId, categoryId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/user/{userId}/latest")
+    public ResponseEntity<List<Categories>> getLatestCategories(@PathVariable Long userId) {
+        try {
+            logger.info("Fetching latest categories for user: {}", userId);
+            List<Categories> categories = categoriesService.getLatestCategories(userId);
+            logger.info("Found {} latest categories", categories.size());
+            return ResponseEntity.ok(categories);
+        } catch (Exception e) {
+            logger.error("Error fetching latest categories: {}", e.getMessage());
+            return ResponseEntity.ok(new ArrayList<>());
+        }
     }
 }
