@@ -11,6 +11,7 @@ const incomeSources = ref([]);
 const expenses = ref([]);
 const latestGoals = ref([]);
 const latestCategories = ref([]);
+const recentTransactions = ref([]);
 
 // Compute total income
 const totalIncome = computed(() => {
@@ -75,11 +76,33 @@ const calculateProgress = (currentAmount, goalAmount) => {
   return ((currentAmount / goalAmount) * 100).toFixed(0);
 };
 
+// Fetch recent transactions
+const fetchRecentTransactions = async () => {
+  try {
+    const userId = localStorage.getItem('userId');
+    const response = await axios.get(`/api/transactions/user/${userId}/recent`);
+    recentTransactions.value = response.data || [];
+  } catch (error) {
+    console.error('Failed to fetch transactions:', error);
+    recentTransactions.value = [];
+  }
+};
+
+// Format date
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(
+    Math.ceil((date - new Date()) / (1000 * 60 * 60 * 24)),
+    'day'
+  );
+};
+
 onMounted(() => {
   fetchIncomes();
   fetchExpenses();
   fetchLatestGoals();
   fetchLatestCategories();
+  fetchRecentTransactions();
 });
 
 const handleFilterChange = (filter) => {
@@ -196,18 +219,30 @@ const handleFilterChange = (filter) => {
                 <button class="text-sm text-gray-500 hover:text-gray-700">View All</button>
               </div>
               <div class="space-y-3">
-                <div v-for="i in 4" :key="i" 
+                <div v-if="recentTransactions.length === 0" 
+                     class="text-center text-gray-500 py-4">
+                  No recent transactions
+                </div>
+                <div v-for="transaction in recentTransactions" 
+                     :key="transaction.id"
                      class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                   <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                      <i class="fas fa-shopping-bag text-gray-500"></i>
+                      <i :class="[
+                        transaction.type === 'INCOME' ? 'pi pi-arrow-up text-green-500' : 'pi pi-arrow-down text-red-500'
+                      ]"></i>
                     </div>
                     <div>
-                      <p class="font-medium text-gray-800">Shopping</p>
-                      <p class="text-sm text-gray-500">2 hours ago</p>
+                      <p class="font-medium text-gray-800">{{ transaction.name }}</p>
+                      <p class="text-sm text-gray-500">{{ formatDate(transaction.createdAt) }}</p>
                     </div>
                   </div>
-                  <span class="text-red-500 font-medium">-$150.00</span>
+                  <span :class="[
+                    'font-medium',
+                    transaction.type === 'INCOME' ? 'text-green-500' : 'text-red-500'
+                  ]">
+                    {{ transaction.type === 'INCOME' ? '+' : '-' }}${{ transaction.amount.toLocaleString() }}
+                  </span>
                 </div>
               </div>
             </div>
