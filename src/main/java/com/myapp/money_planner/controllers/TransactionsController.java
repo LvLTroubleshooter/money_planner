@@ -76,8 +76,8 @@ public class TransactionsController {
             List<Transactions> transactions = transactionsRepository
                     .findByUserIdAndCreatedAtBetweenOrderByCreatedAtAsc(userId, startDate, endDate);
 
-            Map<String, Double> incomeByDate = new LinkedHashMap<>();
-            Map<String, Double> expensesByDate = new LinkedHashMap<>();
+            Map<String, Double> incomeByDate = new TreeMap<>();
+            Map<String, Double> expensesByDate = new TreeMap<>();
 
             DateTimeFormatter formatter = getFormatterForPeriod(period);
             List<LocalDateTime> dates = generateDateRange(startDate, endDate, period);
@@ -89,15 +89,17 @@ public class TransactionsController {
                 expensesByDate.put(formattedDate, 0.0);
             });
 
-            // Aggregate transactions
-            transactions.forEach(transaction -> {
-                String date = transaction.getCreatedAt().format(formatter);
-                if ("INCOME".equals(transaction.getType())) {
-                    incomeByDate.merge(date, transaction.getAmount(), Double::sum);
-                } else {
-                    expensesByDate.merge(date, transaction.getAmount(), Double::sum);
-                }
-            });
+            // Aggregate transactions with null checks
+            transactions.stream()
+                    .filter(transaction -> transaction.getCreatedAt() != null && transaction.getAmount() != null)
+                    .forEach(transaction -> {
+                        String date = transaction.getCreatedAt().format(formatter);
+                        if ("INCOME".equals(transaction.getType())) {
+                            incomeByDate.merge(date, transaction.getAmount(), Double::sum);
+                        } else {
+                            expensesByDate.merge(date, transaction.getAmount(), Double::sum);
+                        }
+                    });
 
             TrendData trendData = new TrendData();
             trendData.setIncomeData(mapToDateAmountPairs(incomeByDate));
@@ -112,7 +114,7 @@ public class TransactionsController {
 
     private List<DateAmountPair> mapToDateAmountPairs(Map<String, Double> data) {
         return data.entrySet().stream()
-                .map(e -> new DateAmountPair(e.getKey(), e.getValue()))
+                .map(e -> new DateAmountPair(e.getKey(), e.getValue() != null ? e.getValue() : 0.0))
                 .collect(Collectors.toList());
     }
 

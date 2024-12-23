@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, onUnmounted } from 'vue';
 import axios from "@/utils/axios";
 import { Line } from 'vue-chartjs';
 import {
@@ -13,6 +13,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
+import { emitter, TRANSACTION_UPDATED } from '@/utils/eventBus';
 
 ChartJS.register(
   CategoryScale,
@@ -195,16 +196,21 @@ const fetchChartData = async () => {
     const response = await axios.get(`/api/transactions/user/${userId}/trends?period=${selectedFilter.value.toLowerCase()}`);
     const { incomeData, expenseData } = response.data;
 
+    if (!incomeData || !expenseData) {
+      console.error('Invalid data received:', response.data);
+      return;
+    }
+
     chartData.value = {
       labels: incomeData.map(item => item.date),
       datasets: [
         {
           ...chartData.value.datasets[0],
-          data: incomeData.map(item => item.amount)
+          data: incomeData.map(item => item.amount || 0)
         },
         {
           ...chartData.value.datasets[1],
-          data: expenseData.map(item => item.amount)
+          data: expenseData.map(item => item.amount || 0)
         }
       ]
     };
@@ -219,6 +225,11 @@ watch(() => selectedFilter.value, () => {
 
 onMounted(() => {
   fetchChartData();
+  emitter.on(TRANSACTION_UPDATED, fetchChartData);
+});
+
+onUnmounted(() => {
+  emitter.off(TRANSACTION_UPDATED, fetchChartData);
 });
 </script>
 
