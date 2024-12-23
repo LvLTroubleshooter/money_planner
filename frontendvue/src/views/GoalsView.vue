@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import axios from '@/utils/axios';
 import SideNavBar from "@/components/SideNavBar.vue";
 import GoalsNavbar from "@/components/GoalsNavbar.vue";
+import ConfirmationModal from "@/components/ConfirmationModal.vue";
 
 const goals = ref([]);
 const showAddModal = ref(false);
@@ -10,6 +11,8 @@ const showEditModal = ref(false);
 const selectedGoal = ref(null);
 const error = ref('');
 const loading = ref(false);
+const showDeleteConfirmModal = ref(false);
+const goalToDelete = ref(null);
 
 const newGoal = ref({
   goalName: '',
@@ -147,11 +150,18 @@ const updateGoal = async () => {
 };
 
 // Delete goal
-const deleteGoal = async (goalId) => {
+const confirmDelete = (goal) => {
+  goalToDelete.value = goal;
+  showDeleteConfirmModal.value = true;
+};
+
+const handleDelete = async () => {
   try {
     const userId = localStorage.getItem('userId');
-    await axios.delete(`/api/goals/user/${userId}/goal/${goalId}`);
-    goals.value = goals.value.filter(goal => goal.goalId !== goalId);
+    await axios.delete(`/api/goals/user/${userId}/goal/${goalToDelete.value.goalId}`);
+    goals.value = goals.value.filter(goal => goal.goalId !== goalToDelete.value.goalId);
+    showDeleteConfirmModal.value = false;
+    goalToDelete.value = null;
   } catch (error) {
     console.error('Failed to delete goal:', error);
   }
@@ -221,7 +231,7 @@ onMounted(() => {
                     class="text-yellow-500 hover:text-yellow-600 transition-colors p-2 hover:bg-yellow-50 rounded-full">
                     <i class="pi pi-pencil"></i>
                   </button>
-                  <button @click="deleteGoal(goal.goalId)"
+                  <button @click="confirmDelete(goal)"
                     class="text-red-500 hover:text-red-600 transition-colors p-2 hover:bg-red-50 rounded-full">
                     <i class="pi pi-trash"></i>
                   </button>
@@ -355,6 +365,16 @@ onMounted(() => {
             </form>
           </div>
         </div>
+
+        <!-- Delete Confirmation Modal -->
+        <ConfirmationModal 
+          v-if="showDeleteConfirmModal" 
+          title="Delete Goal"
+          message="Are you sure you want to delete this goal? This action cannot be undone."
+          @confirm="handleDelete"
+          @cancel="showDeleteConfirmModal = false"
+          :show="showDeleteConfirmModal"
+        />
       </div>
     </div>
   </div>
