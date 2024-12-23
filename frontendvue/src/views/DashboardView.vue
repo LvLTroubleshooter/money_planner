@@ -216,33 +216,82 @@ const handleFilterChange = (filter) => {
             <div class="bg-white rounded-xl shadow-md p-4">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
-                <button class="text-sm text-gray-500 hover:text-gray-700">View All</button>
+                <button class="text-sm text-gray-500 hover:text-gray-700 hover:underline focus:outline-none">
+                  View All
+                </button>
               </div>
               <div class="space-y-3">
                 <div v-if="recentTransactions.length === 0" 
-                     class="text-center text-gray-500 py-4">
+                     class="text-center text-gray-500 py-8 bg-gray-50 rounded-lg">
                   No recent transactions
                 </div>
                 <div v-for="transaction in recentTransactions" 
                      :key="transaction.id"
-                     class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
-                  <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                      <i :class="[
-                        transaction.type === 'INCOME' ? 'pi pi-arrow-up text-green-500' : 'pi pi-arrow-down text-red-500'
-                      ]"></i>
+                     class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-all duration-200 group cursor-pointer">
+                  <div class="flex items-center space-x-4 flex-1 min-w-0">
+                    <div class="flex flex-col items-center space-y-1">
+                      <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all duration-200">
+                        <i :class="[
+                          transaction.type === 'INCOME' ? 'pi pi-arrow-up text-green-500' : 'pi pi-arrow-down text-red-500',
+                          'text-lg'
+                        ]"></i>
+                      </div>
+                      <span class="text-xs font-medium" 
+                            :class="transaction.type === 'INCOME' ? 'text-green-600' : 'text-red-600'">
+                        #{{ transaction.id }}
+                      </span>
                     </div>
-                    <div>
-                      <p class="font-medium text-gray-800">{{ transaction.name }}</p>
-                      <p class="text-sm text-gray-500">{{ formatDate(transaction.createdAt) }}</p>
+
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center space-x-2">
+                        <p class="font-medium text-gray-800 truncate">{{ transaction.name }}</p>
+                        <span class="px-2 py-1 text-xs rounded-full" 
+                              :class="transaction.type === 'INCOME' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                          {{ transaction.type }}
+                        </span>
+                      </div>
+                      <div class="flex items-center space-x-2 text-sm text-gray-500 mt-1">
+                        <span>{{ formatDate(transaction.createdAt) }}</span>
+                        <span>•</span>
+                        <span class="truncate">
+                          {{ transaction.type === 'INCOME' ? 'Income Source' : 'Category' }}
+                        </span>
+                      </div>
+                      <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                        <span class="flex items-center space-x-1">
+                          <i class="pi pi-clock text-gray-400"></i>
+                          <span>{{ new Date(transaction.createdAt).toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true 
+                          }) }}</span>
+                        </span>
+                        <span class="flex items-center space-x-1">
+                          <i class="pi pi-calendar text-gray-400"></i>
+                          <span>{{ new Date(transaction.createdAt).toLocaleDateString() }}</span>
+                        </span>
+                        <span v-if="transaction.type === 'EXPENSE'" 
+                              class="flex items-center space-x-1 bg-gray-100 px-2 py-1 rounded-full">
+                          <i class="pi pi-tag text-gray-400"></i>
+                          <span>{{ transaction.name }}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <span :class="[
-                    'font-medium',
-                    transaction.type === 'INCOME' ? 'text-green-500' : 'text-red-500'
-                  ]">
-                    {{ transaction.type === 'INCOME' ? '+' : '-' }}${{ transaction.amount.toLocaleString() }}
-                  </span>
+
+                  <div class="text-right flex flex-col items-end">
+                    <span :class="[
+                      'font-medium whitespace-nowrap ml-4 text-lg',
+                      transaction.type === 'INCOME' ? 'text-green-500' : 'text-red-500'
+                    ]">
+                      {{ transaction.type === 'INCOME' ? '+' : '-' }}${{ transaction.amount.toLocaleString() }}
+                    </span>
+                    <div class="mt-2 flex items-center space-x-2">
+                      <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">
+                        {{ transaction.type === 'INCOME' ? 'Received' : 'Completed' }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
