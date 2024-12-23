@@ -163,21 +163,25 @@ const handleFilterChange = (filter) => {
                 <h3 class="text-lg font-semibold text-gray-800">Top Categories</h3>
                 <button 
                   @click="$router.push({ name: 'categoriesPage' })" 
-                  class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                  class="text-sm text-gray-500 hover:text-gray-700 transition-colors hover:underline focus:outline-none">
                   View All
                 </button>
               </div>
               <div class="space-y-3 flex-grow overflow-auto">
-                <div v-if="latestCategories.length === 0" class="text-center text-gray-500 py-4">
+                <div v-if="latestCategories.length === 0" 
+                     class="text-center text-gray-500 py-4 bg-gray-50 rounded-lg">
                   No categories found
                 </div>
-                <div v-for="category in latestCategories" :key="category.categoryId"
-                     class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                <div v-for="category in latestCategories" 
+                     :key="category.categoryId"
+                     class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-all duration-200 group cursor-pointer">
                   <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                      <i :class="[`pi ${category.icon}`, 'text-gray-500']"></i>
+                    <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all duration-200">
+                      <i :class="[`pi ${category.icon}`, 'text-gray-600']"></i>
                     </div>
-                    <span class="font-medium text-gray-700">{{ category.categoryName }}</span>
+                    <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                      {{ category.categoryName }}
+                    </span>
                   </div>
                 </div>
               </div>
