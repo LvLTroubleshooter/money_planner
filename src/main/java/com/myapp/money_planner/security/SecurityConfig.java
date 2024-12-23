@@ -27,6 +27,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/categories/user/*/latest").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/transactions/user/*/recent").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/transactions/user/*/all").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/transactions/user/*/trends").permitAll()
                         .anyRequest().permitAll());
         return http.build();
     }
