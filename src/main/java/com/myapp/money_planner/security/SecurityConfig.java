@@ -26,6 +26,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/users/*/verify-password").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/user/*/latest").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/transactions/user/*/recent").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/transactions/user/*/all").permitAll()
                         .anyRequest().permitAll());
         return http.build();
     }

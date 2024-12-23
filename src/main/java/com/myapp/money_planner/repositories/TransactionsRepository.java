@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface TransactionsRepository extends JpaRepository<Transactions, Long> {
     List<Transactions> findTop4ByUserIdOrderByCreatedAtDesc(Long userId);
+
+    List<Transactions> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

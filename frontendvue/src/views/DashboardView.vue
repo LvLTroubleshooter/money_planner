@@ -5,6 +5,14 @@ import GoalDeadlineOverview from "@/components/GoalDeadlineOverview.vue";
 import IncomeExpenseTrends from "@/components/IncomeExpenseTrends.vue";
 import axios from "@/utils/axios";
 import { ref, onMounted, computed } from "vue";
+import AllTransactionsModal from "@/components/AllTransactionsModal.vue";
+
+const props = defineProps({
+  userId: {
+    type: [String, Number],
+    required: false
+  }
+});
 
 const selectedFilter = ref("Week");
 const incomeSources = ref([]);
@@ -12,6 +20,7 @@ const expenses = ref([]);
 const latestGoals = ref([]);
 const latestCategories = ref([]);
 const recentTransactions = ref([]);
+const showAllTransactions = ref(false);
 
 // Compute total income
 const totalIncome = computed(() => {
@@ -26,8 +35,9 @@ const totalExpenses = computed(() => {
 // Fetch incomes
 const fetchIncomes = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    const response = await axios.get(`/api/incomesources/user/${userId}`);
+    const id = localStorage.getItem('userId');
+    if (!id) return;
+    const response = await axios.get(`/api/incomesources/user/${id}`);
     incomeSources.value = response.data;
   } catch (error) {
     console.error('Failed to fetch incomes:', error);
@@ -38,8 +48,9 @@ const fetchIncomes = async () => {
 // Fetch expenses
 const fetchExpenses = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    const response = await axios.get(`/api/expenses/user/${userId}`);
+    const id = localStorage.getItem('userId');
+    if (!id) return;
+    const response = await axios.get(`/api/expenses/user/${id}`);
     expenses.value = response.data;
   } catch (error) {
     console.error('Failed to fetch expenses:', error);
@@ -50,9 +61,10 @@ const fetchExpenses = async () => {
 // Fetch goals - using the same pattern as income and expenses
 const fetchLatestGoals = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    const response = await axios.get(`/api/goals/user/${userId}/latest`);
-    latestGoals.value = response.data || [];  // Ensure we always have an array
+    const id = localStorage.getItem('userId');
+    if (!id) return;
+    const response = await axios.get(`/api/goals/user/${id}/latest`);
+    latestGoals.value = response.data || [];
   } catch (error) {
     console.error('Failed to fetch goals:', error);
     latestGoals.value = [];
@@ -62,8 +74,9 @@ const fetchLatestGoals = async () => {
 // Fetch latest categories
 const fetchLatestCategories = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    const response = await axios.get(`/api/categories/user/${userId}/latest`);
+    const id = localStorage.getItem('userId');
+    if (!id) return;
+    const response = await axios.get(`/api/categories/user/${id}/latest`);
     latestCategories.value = response.data || [];
   } catch (error) {
     console.error('Failed to fetch categories:', error);
@@ -79,8 +92,9 @@ const calculateProgress = (currentAmount, goalAmount) => {
 // Fetch recent transactions
 const fetchRecentTransactions = async () => {
   try {
-    const userId = localStorage.getItem('userId');
-    const response = await axios.get(`/api/transactions/user/${userId}/recent`);
+    const id = localStorage.getItem('userId');
+    if (!id) return;
+    const response = await axios.get(`/api/transactions/user/${id}/recent`);
     recentTransactions.value = response.data || [];
   } catch (error) {
     console.error('Failed to fetch transactions:', error);
@@ -216,7 +230,9 @@ const handleFilterChange = (filter) => {
             <div class="bg-white rounded-xl shadow-md p-4">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Recent Transactions</h3>
-                <button class="text-sm text-gray-500 hover:text-gray-700 hover:underline focus:outline-none">
+                <button 
+                  @click="showAllTransactions = true"
+                  class="text-sm text-gray-500 hover:text-gray-700 hover:underline focus:outline-none">
                   View All
                 </button>
               </div>
@@ -300,6 +316,11 @@ const handleFilterChange = (filter) => {
       </div>
     </div>
   </div>
+  <AllTransactionsModal 
+    :show="showAllTransactions"
+    :userId="props.userId"
+    @close="showAllTransactions = false"
+  />
 </template>
 
 <style scoped>

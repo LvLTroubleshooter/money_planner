@@ -39,4 +39,17 @@ public class TransactionsController {
             return ResponseEntity.ok(new ArrayList<>());
         }
     }
+
+    @GetMapping("/user/{userId}/all")
+    public ResponseEntity<List<Transactions>> getAllTransactions(@PathVariable Long userId) {
+        try {
+            logger.info("Fetching all transactions for user: {}", userId);
+            List<Transactions> transactions = transactionsRepository.findByUserIdOrderByCreatedAtDesc(userId);
+            logger.info("Found {} transactions for user {}", transactions.size(), userId);
+            return ResponseEntity.ok(transactions);
+        } catch (Exception e) {
+            logger.error("Error fetching all transactions for user {}: {}", userId, e.getMessage());
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
 }
