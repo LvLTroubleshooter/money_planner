@@ -40,6 +40,8 @@ Before running this application, make sure you have the following installed:
 
 The database schema and Entity-Relationship Diagram (ERR) can be found in the `MySQL` directory of this project.
 
+![EER](/Misc/EER.png)
+
 ## Project Structure
 
 ```
