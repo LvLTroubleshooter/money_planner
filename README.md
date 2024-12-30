@@ -80,7 +80,7 @@ money-planner/
 
 4. Set up the frontend:
    ```bash
-   cd frontend
+   cd frontendvue
    npm install
    ```
 
