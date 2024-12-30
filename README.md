@@ -94,8 +94,8 @@ money-planner/
 
 2. In a new terminal, start the frontend development server:
    ```bash
-   cd frontend
-   npm run serve
+   cd frontendvue
+   npm run dev
    ```
 
 3. Access the application at `http://localhost:3000`
