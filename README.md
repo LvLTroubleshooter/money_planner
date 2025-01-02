@@ -46,15 +46,17 @@ The database schema and Entity-Relationship Diagram (ERR) can be found in the `M
 
 ```
 money-planner/
-├── backend/
-│   ├── src/
+├── src/
 │   └── pom.xml
-├── frontend/
+│
+├── frontendVue/
 │   ├── src/
 │   └── package.json
+│
 ├── MySQL/
 │   ├── schema.sql
 │   └── ERR-diagram.png
+│
 └── README.md
 ```
 
@@ -73,14 +75,14 @@ money-planner/
 
 3. Configure the backend:
    ```bash
-   cd backend
+   cd src
    # Update application.properties with your database credentials
    mvn clean install
    ```
 
 4. Set up the frontend:
    ```bash
-   cd frontendvue
+   cd frontendVue
    npm install
    ```
 
@@ -94,7 +96,7 @@ money-planner/
 
 2. In a new terminal, start the frontend development server:
    ```bash
-   cd frontendvue
+   cd frontendVue
    npm run dev
    ```
 
